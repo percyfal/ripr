@@ -1,0 +1,51 @@
+665  28.45  2.93  5.02  g5129s420  7350  7882  (1924)  C  MIR#SINE/MIR  (1)  261  28  3
+
+  g5129s420         7350 ATCATAACAAACATTTAT--GGTGCCTCCTATGGAGCAGGGATTTTGCTT 7397   
+                           v     v           i i  i v     viv    v i v v  v
+C MIR#SINE/MIR       261 ATAATAACCAACATTTATTGAGCGCTTACTATGTGCCAGGCACTGTTCTA 212    
+
+  g5129s420         7398 AGGACTCTGAACTATAT---CTTACTT-GTCTTCATTAAAAACCTTATGA 7443   
+                           vi  i iv   i        i i   i  i    i  v    i     
+C MIR#SINE/MIR       211 AGCGCTTTACA-TGTATTAACTCATTTAATCCTCA-CAACAACCCTATGA 164    
+
+  g5129s420         7444 AAAAGGTACTATTATTAACTGGGGXTGGGTTGTTTAACAGATAAGAAAGC 7787   
+                         iiv              v i         iii   v      i  i  i 
+C MIR#SINE/MIR       163 GGTAGGTACTATTATTATCC---------CCATTTTACAGATGAGGAAAC 123    
+
+  g5129s420         7788 TTAAGAATTAGAGAGATAAATTATCTTGCTTAAGGTAACACAGTTAACAA 7837   
+                          v i v  i      i v  v  v     ii     v      i  ii  
+C MIR#SINE/MIR       122 TGAGGCA-CAGAGAGGTTAAGTAACTTGCCCAAGGTCACACAGCTAGTAA 74     
+
+  g5129s420         7838 GCATTAG-GTCAAAGTTTGAACTCGGGCAGTCTGACTACAGAGCCC 7882   
+                          iivi    i iiii  i    i i         i  v     i  
+C MIR#SINE/MIR        73 GTGGCAGAGCCGGGATTCGAACCCAGGCAGTCTGGCTCCAGAGTCC 28     
+
+Transitions / transversions = 1.96 (45 / 23)
+Gap_init rate = 0.03 (8 / 234), avg. gap size = 2.38 (19 / 8)  
+
+
+665  28.45  2.93  5.02  g5129s420  7350  7882  (1924)  C  MIR#SINE/MIR  (1)  261  28  3
+
+  g5129s420         7350 ATCATAACAAACATTTAT--GGTGCCTCCTATGGAGCAGGGATTTTGCTT 7397   
+                           v     v           i i  i v     viv    v i v v  v
+C MIR#SINE/MIR       261 ATAATAACCAACATTTATTGAGCGCTTACTATGTGCCAGGCACTGTTCTA 212    
+
+  g5129s420         7398 AGGACTCTGAACTATAT---CTTACTT-GTCTTCATTAAAAACCTTATGA 7443   
+                           vi  i iv   i        i i   i  i    i  v    i     
+C MIR#SINE/MIR       211 AGCGCTTTACA-TGTATTAACTCATTTAATCCTCA-CAACAACCCTATGA 164    
+
+  g5129s420         7444 AAAAGGTACTATTATTAACTGGGGXTGGGTTGTTTAACAGATAAGAAAGC 7787   
+                         iiv              v i         iii   v      i  i  i 
+C MIR#SINE/MIR       163 GGTAGGTACTATTATTATCC---------CCATTTTACAGATGAGGAAAC 123    
+
+  g5129s420         7788 TTAAGAATTAGAGAGATAAATTATCTTGCTTAAGGTAACACAGTTAACAA 7837   
+                          v i v  i      i v  v  v     ii     v      i  ii  
+C MIR#SINE/MIR       122 TGAGGCA-CAGAGAGGTTAAGTAACTTGCCCAAGGTCACACAGCTAGTAA 74     
+
+  g5129s420         7838 GCATTAG-GTCAAAGTTTGAACTCGGGCAGTCTGACTACAGAGCCC 7882   
+                          iivi    i iiii  i    i i         i  v     i  
+C MIR#SINE/MIR        73 GTGGCAGAGCCGGGATTCGAACCCAGGCAGTCTGGCTCCAGAGTCC 28     
+
+Transitions / transversions = 1.96 (45 / 23)
+Gap_init rate = 0.03 (8 / 234), avg. gap size = 2.38 (19 / 8)  
+

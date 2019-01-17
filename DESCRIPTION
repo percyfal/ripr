@@ -1,0 +1,27 @@
+Package: ripr
+Title: RIP composite analysis
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Per",
+	   family = "Unneberg",
+	   role = c("aut", "cre"),
+	   email = "per.unneberg@scilifelab.se")
+Description: Tools for calculating RIP indices.
+Depends:
+    R (>= 3.5)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+	methods,
+	ggplot2,
+	tidyr,
+	tidyselect,
+	RColorBrewer,
+	SummarizedExperiment (>= 1.6.4),
+	GenomicRanges (>= 1.32.0),
+	IRanges (>= 2.14.0),
+	S4Vectors
+Suggests:
+	testthat
+RoxygenNote: 6.1.1
