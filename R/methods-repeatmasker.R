@@ -3,20 +3,42 @@
              "query_end", "query_bases", "complement",
              "matching_repeat", "repeat_class", "subject_start",
              "subject_end", "subject_bases", "linkage_id")
+.aln_header <- c("score", "divergence", "deletions",
+                 "insertions", "query_name", "query_start",
+                 "query_end", "query_bases", "complement",
+                 "repeat_class", "subject_start",
+                 "subject_end", "subject_bases", "linkage_id")
+
 .numeric_columns <- c("score", "divergence", "deletions", "insertions", "query_start",
                       "query_end", "subject_start", "subject_end")
 
-## Scan a summary line or alignment header line
-.scan_line <- function(line) {
+## Scan a summary line or alignment header line. Note that they are
+## slightly different in that the summary file contains an extra
+## column for repeat class/family, which often is excluded in
+## alignments
+.scan_line <- function(line, summary = TRUE) {
     d <- as.list(unlist(strsplit(line, "\\s+")))
-    ## Remove trailing asterix if present
-    if (length(d) == 16)
-        d[16] <- NULL
-    ## Linkage ID is missing
-    if (length(d) == 14) d[[15]] <- NA
-
-    ## Assume 15 columns
-    names(d) <- .header
+    if (summary) {
+        ## Remove trailing asterix if present
+        if (length(d) == 16)
+            d[16] <- NULL
+        ## Linkage ID is missing
+        if (length(d) == 14) d[[15]] <- NA
+        ## Now assume 15 columns
+        names(d) <- .header
+    } else {
+        ## matching_repeat is always(?) missing; linkage_id is always
+        ## present
+        if (length(d) == 13) {
+            ## 13: complement missing
+            names(d) <- .aln_header[-9]
+            d$complement = "+"
+        } else if (length(d) == 14) {
+            ## 14: complement included
+            names(d) <- .aln_header
+        }
+        d$matching_repeat <- unlist(strsplit(d$repeat_class, "#"))[1]
+    }
     d$repeat_class <- paste(d$matching_repeat, d$repeat_class,
                             sep = "#")
     if (d$complement == "C") {
@@ -144,13 +166,10 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
             end <- grep(comment.char, buf)[1] - 1
             if (is.na(end))
                 end <- length(buf)
-            message("set end to ", end)
             eof <- TRUE
         } else {
             end <- pos[2] - 1
         }
-        if (!is.na(end))
-            message("start: ", start, " end: ", end, " pos: ", pos)
         if (!(is.na(start) | is.na(end))) {
             aln <- buf[start:end]
             buf[start:end] <- NULL
@@ -206,27 +225,40 @@ setGeneric("readRepeatMaskerAlignment", function(filename, ...)
 ##'
 setMethod("readRepeatMaskerAlignment", signature = "character", definition = function (filename, ...) {
     start_time <- Sys.time()
+    old_time <- start_time
     con <- file(filename, "r")
     on.exit(close(con))
     message("Reading repeatmasker alignment file ", filename)
     buf <- list()
     nlines <- 0
+    naln <- 0
     data <- data.frame()
-    while(TRUE) {
+    while (TRUE) {
         res <- .nextAlignmentChunk(con, buf)
         nlines <- nlines + length(res$aln)
         ## Process alignment
         if (!is.null(res$aln)) {
             data <- rbind(data, .repeatMaskerAlignment(res$aln))
+            naln <- naln + 1
+            if (naln %% 1000  == 0) {
+                now_time <- Sys.time()
+                message("Read ", naln, " alignments in ",
+                        format(now_time - old_time, digits = 2))
+                old_time <- now_time
+            }
         }
         if (res$eof) break
         buf <- res$buf
     }
 
     obj <- .create_query_subject(data)
-    message("Processed ", nlines, " lines in ", format(Sys.time() - start_time, digits=2))
-    AlignmentPairs(obj$query, obj$subject, score = data$score, divergence = data$divergence,
-                   deletions = data$deletions, insertions = data$insertions,
-                   linkage_id = as.character(data$linkage_id))
+    message("Processed ", nlines, " lines in ",
+            format(Sys.time() - start_time, digits = 2))
+    AlignmentPairs(
+        obj$query, obj$subject, score = data$score,
+        divergence = data$divergence, deletions = data$deletions,
+        insertions = data$insertions,
+        linkage_id = as.character(data$linkage_id)
+    )
 
 })
