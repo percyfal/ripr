@@ -2,10 +2,19 @@
 ##'
 ##' AlignmentItem constructor
 ##'
-##' @title AlignmentItem
+##'
 ##' @export
 ##' @rdname AlignmentItem
 ##'
+##'
+##' @param seqnames sequence names
+##' @param ranges IRanges
+##' @param strand sequence strand
+##' @param ... Additional parameters to pass to GRanges constructor
+##' @param seqlengths sequence lengths
+##' @param seqinfo Seqinfo object
+##' @param bases bases from alignment end point to end of sequence
+##' @param sequences XStringSet sequences
 ##'
 AlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                           ..., seqlengths=NULL, seqinfo=NULL, bases=NULL,

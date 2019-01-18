@@ -21,7 +21,9 @@ Imports:
 	SummarizedExperiment (>= 1.6.4),
 	GenomicRanges (>= 1.32.0),
 	IRanges (>= 2.14.0),
-	S4Vectors
+	S4Vectors,
+	GenomeInfoDb,
+	Biostrings
 Suggests:
 	testthat
 RoxygenNote: 6.1.1

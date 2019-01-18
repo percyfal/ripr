@@ -102,6 +102,10 @@
 setGeneric("readRepeatMaskerSummary", function(filename, ...)
     standardGeneric("readRepeatMaskerSummary"))
 
+##'
+##' @rdname readRepeatMaskerSummary
+##' @export
+##'
 setMethod("readRepeatMaskerSummary", signature = "character", definition = function (filename, ...) {
     start_time <- Sys.time()
     con <- file(filename, "r")
@@ -117,7 +121,9 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
     obj <- .create_query_subject(data)
 
     message("Processed ", length(lines), " lines in ", format(Sys.time() - start_time, digits=2))
-    AlignmentPairs(obj$query, obj$subject)
+    AlignmentPairs(obj$query, obj$subject, score = data$score, divergence = data$divergence,
+                   deletions = data$deletions, insertions = data$insertions,
+                   linkage_id = as.character(data$linkage_id))
 })
 
 
@@ -188,10 +194,16 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
 ##'
 ##' @export
 ##' @rdname readRepeatMaskerAlignment
+##' @importFrom GenomeInfoDb Seqinfo
 ##'
 setGeneric("readRepeatMaskerAlignment", function(filename, ...)
     standardGeneric("readRepeatMaskerAlignment"))
 
+##'
+##' @rdname readRepeatMaskerAlignment
+##' @export
+##'
+##'
 setMethod("readRepeatMaskerAlignment", signature = "character", definition = function (filename, ...) {
     start_time <- Sys.time()
     con <- file(filename, "r")
@@ -199,19 +211,22 @@ setMethod("readRepeatMaskerAlignment", signature = "character", definition = fun
     message("Reading repeatmasker alignment file ", filename)
     buf <- list()
     nlines <- 0
-    d <- data.frame()
+    data <- data.frame()
     while(TRUE) {
         res <- .nextAlignmentChunk(con, buf)
         nlines <- nlines + length(res$aln)
         ## Process alignment
         if (!is.null(res$aln)) {
-            d <- rbind(d, .repeatMaskerAlignment(res$aln))
+            data <- rbind(data, .repeatMaskerAlignment(res$aln))
         }
         if (res$eof) break
         buf <- res$buf
     }
 
-    obj <- .create_query_subject(d)
-    message("Processed ", length(lines), " lines in ", format(Sys.time() - start_time, digits=2))
-    AlignmentPairs(obj$query, obj$subject)
+    obj <- .create_query_subject(data)
+    message("Processed ", nlines, " lines in ", format(Sys.time() - start_time, digits=2))
+    AlignmentPairs(obj$query, obj$subject, score = data$score, divergence = data$divergence,
+                   deletions = data$deletions, insertions = data$insertions,
+                   linkage_id = as.character(data$linkage_id))
+
 })
