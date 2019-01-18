@@ -181,7 +181,7 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
     res
 }
 .repeatMaskerAlignment <- function(aln) {
-    data <- as.data.frame(t(.scan_line(aln[[1]])))
+    data <- as.data.frame(t(.scan_line(aln[[1]], summary = FALSE)))
     data[.numeric_columns] <- sapply(data[.numeric_columns], function(x) {as.numeric(as.character(x))})
 
     data <- .process_header(data)
