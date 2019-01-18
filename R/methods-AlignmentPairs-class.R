@@ -6,16 +6,16 @@
 ##' @export
 ##' @rdname AlignmentPairs
 ##'
-setMethod("AlignmentPairs", signature=c("AlignmentItem", "AlignmentItem"),
-          definition=function(query, subject, ...){
+setMethod("AlignmentPairs", signature = c("AlignmentItem", "AlignmentItem"),
+          definition = function(query, subject, ...){
     if (!missing(...)) {
         elementMetadata <- DataFrame(...)
     } else {
-        elementMetadata <- new("DataFrame", nrows=length(query))
+        elementMetadata <- new("DataFrame", nrows = length(query))
     }
     elementMetadata$query <- query
     elementMetadata$subject <- subject
-    new("AlignmentPairs", first=1:length(query), second=1:length(subject),
+    new("AlignmentPairs", first = 1:length(query), second = 1:length(subject),
         elementMetadata = elementMetadata)
 })
 
