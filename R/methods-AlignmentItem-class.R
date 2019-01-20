@@ -21,12 +21,10 @@ AlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                           sequence = NULL) {
     gr <- GRanges(seqnames = seqnames, ranges = ranges, strand = strand,
                   ..., seqlengths = seqlengths, seqinfo = seqinfo)
-    message(class(sequence))
     if (is.null(bases))
         bases <- rep(NA, length(gr))
     if (is.null(sequence))
         sequence <- BStringSet(rep("", length(gr)))
-    message(class(sequence))
     ai <- new("AlignmentItem", gr, bases = bases, sequence = sequence)
     ai
 }
