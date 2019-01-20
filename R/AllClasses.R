@@ -1,6 +1,6 @@
-.characterOrNA <- setClassUnion(".characterOrNA", c("character", "logical"))
-.integerOrMissing <- setClassUnion(".integerOrMissing", c("integer", "missing", "logical"))
-.XStringSetOrMissing <- setClassUnion(".XStringSetOrMissing", c("XStringSet", "missing", "logical"))
+setClassUnion("characterOrNA", c("character", "logical"))
+setClassUnion("integerOrMissing", c("integer", "missing", "logical"))
+setClassUnion("XStringSetOrMissing", c("XStringSet", "BStringSet", "missing", "logical"))
 
 .valid.AlignmentItem <- function(object)
 {
@@ -27,8 +27,8 @@
 ##'
 setClass("AlignmentItem",
          representation = representation(
-             bases = ".integerOrMissing",
-             sequence = ".XStringSetOrMissing"
+             bases = "integerOrMissing",
+             sequence = "XStringSetOrMissing"
          ),
          contains = "GRanges",
          validity = .valid.AlignmentItem)
@@ -40,32 +40,49 @@ setMethod(GenomicRanges:::extraColumnSlotNames, "AlignmentItem",
 })
 
 
-
+.valid.RepeatAlignmentItem <- function(object)
+{
+    if (length(object)) {
+        if (!(length(object) == length(object@bases)))
+            return("'bases' slot must be of same length as ranges")
+        if (!(length(object) == length(object@sequence)))
+            return("'sequence' slot must be of same length as ranges")
+        if (!(length(object) == length(object@repeat_class)))
+            return("'repeat_class' slot must be of same length as ranges")
+    }
+}
 
 ##' Representation of a repeat library alignment item
 ##'
 ##' RepeatAlignmentItem subclasses and extends AlignmentItem by adding
-##' two additional slots, repeat_family and repeat_class, that hold
-##' information about the repeat.
+##' one additional slot for repeat_class. Note that the RepeatMasker
+##' library fasta header uses the repeat name (here seqname) and the
+##' repeat class to identify the sequence, concatenated by a #. Hence,
+##' in order to match an entry in RepeatAlignmentItem to a library, a
+##' helper function to convert between naming systems is needed.
 ##'
 ##' @export
 ##' @rdname RepeatAlignmentItem-class
 ##'
 setClass("RepeatAlignmentItem",
-         contains = c("AlignmentItem"),
          representation = representation(
-             repeat_family = "factor",
              repeat_class = "factor"
          ),
-         prototype = prototype(
-             repeat_family = factor(),
-             repeat_class = factor()
-         ))
+         contains = c("AlignmentItem"),
+         validity = .valid.RepeatAlignmentItem)
+
 
 setMethod(GenomicRanges:::extraColumnSlotNames, "RepeatAlignmentItem",
           function(x) {
-            c("bases", "sequence", "repeat_family", "repeat_class")
-          })
+    c("bases", "sequence", "repeat_class")
+})
+
+setMethod("initialize", "RepeatAlignmentItem", function(.Object, ...) {
+    .Object <- callNextMethod()
+    validObject(.Object)
+    .Object
+})
+
 
 
 .valid.AlignmentPairs <- function(object) {

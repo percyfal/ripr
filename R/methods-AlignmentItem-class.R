@@ -18,13 +18,15 @@
 ##'
 AlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                           ..., seqlengths=NULL, seqinfo=NULL, bases=NULL,
-                          sequences = NULL) {
+                          sequence = NULL) {
     gr <- GRanges(seqnames = seqnames, ranges = ranges, strand = strand,
                   ..., seqlengths = seqlengths, seqinfo = seqinfo)
+    message(class(sequence))
     if (is.null(bases))
         bases <- rep(NA, length(gr))
-    if (is.null(sequences))
-        sequences <- BStringSet(rep("", length(gr)))
-    ai <- new("AlignmentItem", gr, bases = bases, sequence = sequences)
+    if (is.null(sequence))
+        sequence <- BStringSet(rep("", length(gr)))
+    message(class(sequence))
+    ai <- new("AlignmentItem", gr, bases = bases, sequence = sequence)
     ai
 }

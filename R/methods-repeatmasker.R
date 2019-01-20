@@ -6,7 +6,7 @@
 .aln_header <- c("score", "divergence", "deletions",
                  "insertions", "query_name", "query_start",
                  "query_end", "query_bases", "complement",
-                 "repeat_class", "subject_start",
+                 "repeat_label", "subject_start",
                  "subject_end", "subject_bases", "linkage_id")
 
 .numeric_columns <- c("score", "divergence", "deletions", "insertions", "query_start",
@@ -26,6 +26,7 @@
         if (length(d) == 14) d[[15]] <- NA
         ## Now assume 15 columns
         names(d) <- .header
+        d$repeat_label <- paste(d$matching_repeat, d$repeat_class, sep="#")
     } else {
         ## matching_repeat is always(?) missing; linkage_id is always
         ## present
@@ -37,24 +38,14 @@
             ## 14: complement included
             names(d) <- .aln_header
         }
-        d$matching_repeat <- unlist(strsplit(d$repeat_class, "#"))[1]
+        d$matching_repeat <- unlist(strsplit(d$repeat_label, "#"))[1]
+        d$repeat_class <- unlist(strsplit(d$repeat_label, "#"))[1]
     }
-    d$repeat_class <- paste(d$matching_repeat, d$repeat_class,
-                            sep = "#")
     if (d$complement == "C") {
         tmp <- d$subject_bases
         d$subject_bases <- d$subject_start
         d$subject_start <- tmp
     }
-    if (grepl("#", d$repeat_class)) {
-        repeatinfo <- unlist(strsplit(d$repeat_class, "#"))
-    } else {
-        message("missing repeat name/family separator; setting both to ",
-                d$repeat_class)
-        repeatinfo <- c(d$repeat_class, d$repeat_class)
-    }
-    d$repeat_name <- repeatinfo[1]
-    d$repeat_family <- repeatinfo[2]
     unlist(d)
 }
 
@@ -74,7 +65,7 @@
 .create_query_subject <- function(data) {
     qinfo <- unique(data.frame(names = as.character(data$query_name),
                                lengths = data$query_length))
-    sinfo <- unique(data.frame(names = as.character(data$repeat_name),
+    sinfo <- unique(data.frame(names = as.character(data$matching_repeat),
                                lengths = data$subject_length))
     qinfo$names <- as.character(qinfo$names)
     sinfo$names <- as.character(sinfo$names)
@@ -103,14 +94,16 @@
         sequence = query_seq,
         seqinfo = Seqinfo(qinfo$names, qinfo$lengths))
 
-    subject <- AlignmentItem(
-        seqnames = S4Vectors::Rle(data$repeat_name, rep(1, length(data$repeat_name))),
+    subject <- RepeatAlignmentItem(
+        seqnames = S4Vectors::Rle(data$matching_repeat, rep(1, length(data$matching_repeat))),
         ranges = IRanges::IRanges(start = data$subject_start,
                                   end = data$subject_end),
         strand = strand,
         bases = data$subject_bases,
         sequence = subject_seq,
-        seqinfo = Seqinfo(sinfo$names, sinfo$lengths))
+        seqinfo = Seqinfo(sinfo$names, sinfo$lengths),
+        repeat_class = data$repeat_class
+    )
     list(query = query, subject = subject)
 }
 ##' Read repeatmasker summary output
@@ -186,18 +179,12 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
 
     data <- .process_header(data)
 
-    query <- data$query_name
-    subject <- data$matching_repeat
-
-    query.regex <- paste0("^\\s+", query, "\\s+", "\\d+", "\\s+")
-    i <- grepl(query.regex, aln)
-    data$query_seq <- paste0(gsub("^\\s+.+\\s+\\d+\\s+(.+)\\s+\\d+\\s+", "\\1", aln[i]),
-                             collapse = "")
-
-    subject.regex <- paste0("^C?\\s+", subject, "\\s+", "\\d+", "\\s+")
-    i <- grepl(subject.regex, aln)
-    data$subject_seq <- paste0(gsub("^C?\\s+.+\\s+\\d+\\s+(.+)\\s+\\d+\\s+", "\\1", aln[i]),
-                               collapse = "")
+    ## Simpler: just match alignment lines and assume odd are query,
+    ## even are subject
+    aln_regex <- "^C?\\s+([^ ]+)\\s+(\\d+)\\s+([^ ]+)\\s+(\\d+).*$"
+    seqs <- gsub(aln_regex, "\\3", aln[grepl(aln_regex, aln)])
+    data$query_seq <- paste0(seqs[seq(1, length(seqs), 2)], collapse="")
+    data$subject_seq <- paste0(seqs[seq(2, length(seqs), 2)], collapse="")
 
     if (data$complement == "C")
         data$subject_seq <- paste0(rev(unlist(strsplit(data$subject_seq, ""))), collapse="")
@@ -223,7 +210,14 @@ setGeneric("readRepeatMaskerAlignment", function(filename, ...)
 ##' @export
 ##'
 ##'
-setMethod("readRepeatMaskerAlignment", signature = "character", definition = function (filename, ...) {
+##' @param filename input file name
+##' @param num_aln number of alignments to read
+##' @param update_freq print progress message every update_freq alignment
+##' @param ...
+##'
+setMethod("readRepeatMaskerAlignment", signature = "character",
+          definition = function (filename, num_aln = NULL,
+                                 update_freq = NULL, ...) {
     start_time <- Sys.time()
     old_time <- start_time
     con <- file(filename, "r")
@@ -231,34 +225,52 @@ setMethod("readRepeatMaskerAlignment", signature = "character", definition = fun
     message("Reading repeatmasker alignment file ", filename)
     buf <- list()
     nlines <- 0
-    naln <- 0
+    localenv <- new.env()
+    localenv$counter <- 0
+    localenv$size <- 1
     data <- data.frame()
-    while (TRUE) {
-        res <- .nextAlignmentChunk(con, buf)
-        nlines <- nlines + length(res$aln)
-        ## Process alignment
-        if (!is.null(res$aln)) {
-            data <- rbind(data, .repeatMaskerAlignment(res$aln))
-            naln <- naln + 1
-            if (naln %% 1000  == 0) {
-                now_time <- Sys.time()
-                message("Read ", naln, " alignments in ",
-                        format(now_time - old_time, digits = 2))
-                old_time <- now_time
-            }
+    localenv$res <- list(NULL)
+    ## https://stackoverflow.com/questions/17046336/here-we-go-again-append-an-element-to-a-list-in-r
+    AddItemDoubling <- function(item) {
+        if (localenv$counter == localenv$size )
+        {
+            length (localenv$res) <- localenv$size <- localenv$size * 2
         }
-        if (res$eof) break
-        buf <- res$buf
+        localenv$counter <- localenv$counter + 1
+        localenv$res[[localenv$counter]] <- item
     }
 
+    while (TRUE) {
+        chunk <- .nextAlignmentChunk(con, buf)
+        nlines <- nlines + length(chunk$aln)
+        ## Process alignment
+        if (!is.null(chunk$aln)) {
+            AddItemDoubling(chunk$aln)
+            if (!is.null(update_freq)) {
+                if (localenv$counter %% update_freq  == 0) {
+                    now_time <- Sys.time()
+                    message("Read ", localenv$counter, " alignments in ",
+                            format(now_time - old_time, digits = 2))
+                    old_time <- now_time
+                }
+            }
+            if (!is.null(num_aln))
+                if (localenv$counter %% num_aln == 0)
+                    break
+        }
+        if (chunk$eof) break
+        buf <- chunk$buf
+    }
+    localenv$res
+    message("Converting alignments to data frame objects...")
+    data <- do.call("rbind", lapply(localenv$res, .repeatMaskerAlignment))
     obj <- .create_query_subject(data)
     message("Processed ", nlines, " lines in ",
             format(Sys.time() - start_time, digits = 2))
-    AlignmentPairs(
+    list(AlignmentPairs(
         obj$query, obj$subject, score = data$score,
         divergence = data$divergence, deletions = data$deletions,
         insertions = data$insertions,
         linkage_id = as.character(data$linkage_id)
-    )
-
+    ), localenv$res)
 })
