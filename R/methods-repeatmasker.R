@@ -176,7 +176,6 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
 .repeatMaskerAlignment <- function(aln) {
     data <- as.data.frame(t(.scan_line(aln[[1]], summary = FALSE)))
     data[.numeric_columns] <- sapply(data[.numeric_columns], function(x) {as.numeric(as.character(x))})
-
     data <- .process_header(data)
 
     ## Simpler: just match alignment lines and assume odd are query,
@@ -261,16 +260,16 @@ setMethod("readRepeatMaskerAlignment", signature = "character",
         if (chunk$eof) break
         buf <- chunk$buf
     }
-    localenv$res
+    localenv$res <- compact(localenv$res)
     message("Converting alignments to data frame objects...")
     data <- do.call("rbind", lapply(localenv$res, .repeatMaskerAlignment))
     obj <- .create_query_subject(data)
     message("Processed ", nlines, " lines in ",
             format(Sys.time() - start_time, digits = 2))
-    list(AlignmentPairs(
+    AlignmentPairs(
         obj$query, obj$subject, score = data$score,
         divergence = data$divergence, deletions = data$deletions,
         insertions = data$insertions,
         linkage_id = as.character(data$linkage_id)
-    ), localenv$res)
+    )
 })
