@@ -93,45 +93,27 @@ setMethod("linkage_id", "AlignmentPairs", function(x) mcols(x)$linkage_id)
 ##' @param exclude Exclude characters from calculation
 ##'
 setMethod("count", "AlignmentPairs",
-          function(x, width = 2, step = 1, which = "query", exclude = c("X", "-"), ...) {
+          function(x, width = 2, step = 1, exclude = c("X", "-"), which = "query", ...) {
     which <- match.arg(which, c("query", "subject"))
     count(mcols(x)[[which]], width, step, exclude, ...)
 })
 
+##' subseqByRef
 ##'
+##' Retrieve subsequences from reference
+##'
+##' @param x AlignmentPairs
+##' @param ref DNAStringSet
+##' @param which which AlignmentItem to operate on
+##' @param ...
+##' @return XStringSet
+##' @author Per Unneberg
+##'
+##' @rdname subseqByRef
 ##' @export
-##' @rdname RIPProductIndex
 ##'
-##'
-setMethod("RIPProductIndex", "AlignmentPairs",
-          function(x, ...) {
-    counts <- count(x)
-    TpA <- counts[, "TA"]
-    ApT <- counts[, "AT"]
-    TpA / ApT
-})
-
-##'
-##' @export
-##' @rdname RIPSubstrateIndex
-##'
-##'
-setMethod("RIPSubstrateIndex", "AlignmentPairs",
-          function(x, ...) {
-    counts <- count(x)
-    CpA <- counts[, "CA"]
-    TpG <- counts[, "TG"]
-    ApC <- counts[, "AC"]
-    GpT <- counts[, "GT"]
-    (CpA + TpG) / (ApC + GpT)
-})
-
-##'
-##' @export
-##' @rdname RIPCompositeIndex
-##'
-##'
-setMethod("RIPCompositeIndex", "AlignmentPairs",
-          function(x, ...) {
-    RIPProductIndex(x) - RIPSubstrateIndex(x)
+setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
+          function(x, ref, which = "query", ...) {
+    which <- match.arg(which, c("query", "subject"))
+    subseqByRef(mcols(x)[[which]], ref, ...)
 })

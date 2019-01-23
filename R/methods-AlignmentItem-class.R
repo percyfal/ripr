@@ -43,40 +43,19 @@ setMethod("count", "AlignmentItem",
     count(x@sequence, width, step, exclude, ...)
 })
 
+##' subseqByRef
 ##'
+##' Retrieve subsequences from reference
+##'
+##' @param x AlignmentItem
+##' @param ref DNAStringSet
+##' @param ...
+##' @return
+##' @author Per Unneberg
+##' @rdname subseqByRef
 ##' @export
-##' @rdname RIPProductIndex
 ##'
-##'
-setMethod("RIPProductIndex", "AlignmentItem",
-          function(x, ...) {
-    counts <- count(x)
-    TpA <- counts[, "TA"]
-    ApT <- counts[, "AT"]
-    TpA / ApT
-})
-
-##'
-##' @export
-##' @rdname RIPSubstrateIndex
-##'
-##'
-setMethod("RIPSubstrateIndex", "AlignmentItem",
-          function(x, ...) {
-    counts <- count(x)
-    CpA <- counts[, "CA"]
-    TpG <- counts[, "TG"]
-    ApC <- counts[, "AC"]
-    GpT <- counts[, "GT"]
-    (CpA + TpG) / (ApC + GpT)
-})
-
-##'
-##' @export
-##' @rdname RIPCompositeIndex
-##'
-##'
-setMethod("RIPCompositeIndex", "AlignmentItem",
-          function(x, ...) {
-    RIPProductIndex(x) - RIPSubstrateIndex(x)
+setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
+          function(x, ref, ...) {
+    subseq(ref[seqnames(x)], start = start(x), end = end(x), ...)
 })

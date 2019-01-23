@@ -87,46 +87,13 @@ setGeneric("count", signature = "x",
     standardGeneric("count"))
 
 
-##' RIPProductIndex
+##' count
 ##'
-##' Calculate the product RIP index, defined as TpA/ApT
-##'
-##' @export
-##' @rdname RIPProductIndex
-##'
-##' @param x Calculate RIPProductIndex on x
-##' @param ... Arguments to pass to function
-##'
-setGeneric("RIPProductIndex", signature = "x",
-           function(x, ...)
-    standardGeneric("RIPProductIndex"))
-
-##' RIPSubstrateIndex
-##'
-##' Calculate the substrate RIP index, defined as (CpA + TpG) / (ApC + GpT)
+##' Count nucleotides in sequence
 ##'
 ##' @export
-##' @rdname RIPSubstrateIndex
+##' @rdname subseqByRef
 ##'
-##' @param x Calculate RIPCompositeIndex on x
-##' @param ... Arguments to pass to function
-##'
-setGeneric("RIPSubstrateIndex", signature = "x",
-           function(x, ...)
-    standardGeneric("RIPSubstrateIndex"))
-
-
-##' RIPCompositeIndex
-##'
-##' Calculate the composite RIP index, defined as the
-##' product index minus the substrate index
-##'
-##' @export
-##' @rdname RIPCompositeIndex
-##'
-##' @param x Calculate RIPCompositeIndex on x
-##' @param ... Arguments to pass to function
-##'
-setGeneric("RIPCompositeIndex", signature = "x",
-           function(x, ...)
-    standardGeneric("RIPCompositeIndex"))
+setGeneric("subseqByRef", signature = c("x", "ref"),
+           function(x, ref, ...)
+    standardGeneric("subseqByRef"))
