@@ -82,7 +82,9 @@ setGeneric("linkage_id", function(x, ...) standardGeneric("linkage_id"))
 ##' @param x Count nucleotides in object x
 ##' @param ... Arguments to pass to function
 ##'
-setGeneric("count", function(x, ...) standardGeneric("count"))
+setGeneric("count", signature = "x",
+           function(x, width = 2, step = 1, exclude = c("X", "-"), ...)
+    standardGeneric("count"))
 
 
 ##' RIPProductIndex
@@ -95,7 +97,9 @@ setGeneric("count", function(x, ...) standardGeneric("count"))
 ##' @param x Calculate RIPProductIndex on x
 ##' @param ... Arguments to pass to function
 ##'
-setGeneric("RIPProductIndex", function(x, ...) standardGeneric("RIPProductIndex"))
+setGeneric("RIPProductIndex", signature = "x",
+           function(x, ...)
+    standardGeneric("RIPProductIndex"))
 
 ##' RIPSubstrateIndex
 ##'
@@ -107,7 +111,9 @@ setGeneric("RIPProductIndex", function(x, ...) standardGeneric("RIPProductIndex"
 ##' @param x Calculate RIPCompositeIndex on x
 ##' @param ... Arguments to pass to function
 ##'
-setGeneric("RIPSubstrateIndex", function(x, ...) standardGeneric("RIPSubstrateIndex"))
+setGeneric("RIPSubstrateIndex", signature = "x",
+           function(x, ...)
+    standardGeneric("RIPSubstrateIndex"))
 
 
 ##' RIPCompositeIndex
@@ -121,4 +127,6 @@ setGeneric("RIPSubstrateIndex", function(x, ...) standardGeneric("RIPSubstrateIn
 ##' @param x Calculate RIPCompositeIndex on x
 ##' @param ... Arguments to pass to function
 ##'
-setGeneric("RIPCompositeIndex", function(x, ...) standardGeneric("RIPCompositeIndex"))
+setGeneric("RIPCompositeIndex", signature = "x",
+           function(x, ...)
+    standardGeneric("RIPCompositeIndex"))
