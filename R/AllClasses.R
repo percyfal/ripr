@@ -1,4 +1,4 @@
-setClassUnion("characterOrNA", c("character", "logical"))
+setClassUnion("characterOrMissing", c("character", "missing", "logical"))
 setClassUnion("integerOrMissing", c("integer", "missing", "logical"))
 setClassUnion("XStringSetOrMissing", c("XStringSet", "BStringSet", "missing", "logical"))
 
