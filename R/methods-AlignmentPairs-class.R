@@ -117,3 +117,30 @@ setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
     which <- match.arg(which, c("query", "subject"))
     subseqByRef(mcols(x)[[which]], ref, ...)
 })
+
+
+
+##' as.data.frame
+##'
+##' Convert AlignmentPairs to data.frame.
+##'
+##'
+##' @param x AlignmentPairs object
+##' @param sequences include sequences column or not
+##' @param ...
+##' @return data.frame
+##' @author Per Unneberg
+##'
+##' @export
+##'
+setMethod("as.data.frame", "AlignmentPairs",
+    function(x, sequences=FALSE, ...) {
+    mcols_df <- as.data.frame(mcols(x), ...)
+    cnames <- colnames(mcols_df)
+    message(cnames)
+    if (!sequences)
+        cnames <- cnames[!grepl("sequence", cnames)]
+    message(cnames)
+    data.frame(mcols_df[, cnames],
+               stringsAsFactors=FALSE)
+})

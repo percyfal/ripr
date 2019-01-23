@@ -97,3 +97,20 @@ setGeneric("count", signature = "x",
 setGeneric("subseqByRef", signature = c("x", "ref"),
            function(x, ref, ...)
     standardGeneric("subseqByRef"))
+
+
+
+##' AlignmentPairsList
+##'
+##' List of AlignmentPairs items
+##'
+##' @param obj object to convert
+##' ##' @param ...
+##' @return
+##' @author Per Unneberg
+##' @export
+##' @rdname AlignmentPairsList
+##'
+setGeneric("AlignmentPairsList", signature = c("obj"),
+           function(obj, ...)
+    standardGeneric("AlignmentPairsList"))

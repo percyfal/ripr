@@ -114,3 +114,16 @@ setMethod("initialize", "AlignmentPairs", function(.Object, ...) {
     validObject(.Object)
     .Object
 })
+
+
+##' List of AlignmentPairs instances
+##'
+##' Subclass of S4Vectors SimpleList, where each entry is an AlignmentPairs
+##'
+##' @export
+##' @rdname AlignmentPairsList-class
+##'
+setClass("AlignmentPairsList",
+         contains = "SimpleList",
+         prototype = prototype(elementType = "AlignmentPairs")
+         )
