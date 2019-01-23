@@ -95,8 +95,7 @@ setMethod("linkage_id", "AlignmentPairs", function(x) mcols(x)$linkage_id)
 setMethod("count", "AlignmentPairs",
           function(x, width = 2, step = 1, which = "query", exclude = c("X", "-"), ...) {
     which <- match.arg(which, c("query", "subject"))
-    seq <- gsub(paste(exclude, collapse = "|"), "", mcols(x)[[which]]$sequence)
-    oligonucleotideFrequency(DNAStringSet(seq), width = width, step = step, ...)
+    count(mcols(x)[[which]], width, step, exclude, ...)
 })
 
 ##'
