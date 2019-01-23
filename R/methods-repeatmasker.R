@@ -39,7 +39,7 @@
             names(d) <- .aln_header
         }
         d$matching_repeat <- unlist(strsplit(d$repeat_label, "#"))[1]
-        d$repeat_class <- unlist(strsplit(d$repeat_label, "#"))[1]
+        d$repeat_class <- unlist(strsplit(d$repeat_label, "#"))[2]
     }
     if (d$complement == "C") {
         tmp <- d$subject_bases
@@ -135,10 +135,11 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
     data <- .process_header(data)
     obj <- .create_query_subject(data)
 
-    message("Processed ", length(lines), " lines in ", format(Sys.time() - start_time, digits=2))
+    message("Processed ", length(lines), " lines in ",
+            format(Sys.time() - start_time, digits = 2))
     AlignmentPairs(obj$query, obj$subject, score = data$score, divergence = data$divergence,
-                   deletions = data$deletions, insertions = data$insertions,
-                   linkage_id = as.character(data$linkage_id))
+                         deletions = data$deletions, insertions = data$insertions,
+                         linkage_id = as.character(data$linkage_id))
 })
 
 
@@ -173,6 +174,8 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
     names(res) <- c("aln", "buf", "eof")
     res
 }
+
+
 .repeatMaskerAlignment <- function(aln) {
     data <- as.data.frame(t(.scan_line(aln[[1]], summary = FALSE)))
     data[.numeric_columns] <- sapply(data[.numeric_columns], function(x) {as.numeric(as.character(x))})
@@ -182,11 +185,19 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
     ## even are subject
     aln_regex <- "^C?\\s+([^ ]+)\\s+(\\d+)\\s+([^ ]+)\\s+(\\d+).*$"
     seqs <- gsub(aln_regex, "\\3", aln[grepl(aln_regex, aln)])
-    data$query_seq <- paste0(seqs[seq(1, length(seqs), 2)], collapse="")
-    data$subject_seq <- paste0(seqs[seq(2, length(seqs), 2)], collapse="")
+    if (length(seqs) == 0) {
+        warning("No sequences in alignment chunk! Skipping!")
+        message(aln)
+        return (NULL)
+    }
+
+    data$query_seq <- paste0(seqs[seq(1, length(seqs), 2)], collapse = "")
+    data$subject_seq <- paste0(seqs[seq(2, length(seqs), 2)], collapse = "")
 
     if (data$complement == "C")
-        data$subject_seq <- paste0(rev(unlist(strsplit(data$subject_seq, ""))), collapse="")
+        data$subject_seq <- paste0(
+            rev(unlist(strsplit(data$subject_seq, ""))),
+            collapse = "")
 
     data
 }
@@ -262,7 +273,7 @@ setMethod("readRepeatMaskerAlignment", signature = "character",
     }
     localenv$res <- compact(localenv$res)
     message("Converting alignments to data frame objects...")
-    data <- do.call("rbind", lapply(localenv$res, .repeatMaskerAlignment))
+    data <- do.call("rbind", compact(lapply(localenv$res, .repeatMaskerAlignment)))
     obj <- .create_query_subject(data)
     message("Processed ", nlines, " lines in ",
             format(Sys.time() - start_time, digits = 2))
