@@ -59,3 +59,57 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
           function(x, ref, ...) {
     subseq(ref[seqnames(x)], start = start(x), end = end(x), ...)
 })
+
+##' Convert AlignmentItem to data.frame.
+##'
+##'
+##' @param x AlignmentItem object
+##' @param sequences include sequences column or not
+##' @param metadata include metadata or not
+##' @param ...
+##'
+##' @return data.frame
+##' @author Per Unneberg
+##'
+##' @export
+##'
+setMethod("as.data.frame", "AlignmentItem",
+          function(x, sequences = FALSE, metadata = FALSE, ...) {
+    mcols_df <- as.data.frame(GRanges(x), ...)
+    mcols_df[, "bases"] <- x@bases
+    if (sequences)
+        mcols_df[, "sequence"] <- x@sequence
+    if (metadata) {
+        md <- metadata(x)
+        mcols_df[, names(md)] <- md
+    }
+    data.frame(mcols_df,
+               stringsAsFactors = FALSE)
+})
+
+
+
+
+
+##' calculateRIP
+##'
+##' @param x
+##' @param ref
+##' @param ...
+##'
+##' @export
+##' @rdname calculateRIP
+##'
+setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
+          function(x, ref = NULL, sequence = FALSE, metadata = FALSE, ...) {
+    if (missing(ref))
+        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
+              rip.product = RIPProductIndex(x, ...),
+              rip.substrate = RIPSubstrateIndex(x, ...),
+              rip.composite = RIPCompositeIndex(x, ...))
+    else
+        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
+              rip.product = RIPProductIndex(subseqByRef(x, ref), ...),
+              rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...),
+              rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...))
+})

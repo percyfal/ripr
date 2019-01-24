@@ -126,7 +126,6 @@ setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
 ##'
 ##'
 ##' @param x AlignmentPairs object
-##' @param x
 ##' @param sequences include sequences column or not
 ##' @param metadata include metadata or not
 ##' @param ...
@@ -149,4 +148,27 @@ setMethod("as.data.frame", "AlignmentPairs",
     }
     data.frame(mcols_df[, cnames],
                stringsAsFactors = FALSE)
+})
+
+##' calculateRIP
+##'
+##' @param x
+##' @param ref
+##' @param ...
+##'
+##' @export
+##' @rdname calculateRIP
+##'
+setMethod("calculateRIP", c("AlignmentPairs", "DNAStringSetOrMissing"),
+          function(x, ref = NULL, sequence = FALSE, metadata = FALSE, ...) {
+    if (missing(ref))
+        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
+              rip.product = RIPProductIndex(x, ...),
+              rip.substrate = RIPSubstrateIndex(x, ...),
+              rip.composite = RIPCompositeIndex(x, ...))
+    else
+        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
+              rip.product = RIPProductIndex(subseqByRef(x, ref), ...),
+              rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...),
+              rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...))
 })

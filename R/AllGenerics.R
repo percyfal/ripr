@@ -114,3 +114,24 @@ setGeneric("subseqByRef", signature = c("x", "ref"),
 setGeneric("AlignmentPairsList", signature = c("obj"),
            function(obj, ...)
     standardGeneric("AlignmentPairsList"))
+
+
+
+
+
+##' calculateRIP
+##'
+##' calculate RIP scores
+##'
+##' @param x
+##' @param sequences
+##' @param metadata
+##' @param ...
+##'
+##' @export
+##' @rdname calculateRIP
+##'
+setGeneric("calculateRIP", signature = c("x", "ref"),
+           function(x, ref, sequence = FALSE,
+                    metadata = FALSE, ...)
+    standardGeneric("calculateRIP"))
