@@ -26,3 +26,31 @@ RepeatAlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                repeat_class = as.factor(repeat_class))
     rai
 }
+
+##' Convert RepeatAlignmentItem to data.frame.
+##'
+##'
+##' @param x RepeatAlignmentItem object
+##' @param sequences include sequences column or not
+##' @param metadata include metadata or not
+##' @param ...
+##'
+##' @return data.frame
+##' @author Per Unneberg
+##'
+##' @export
+##'
+setMethod("as.data.frame", "RepeatAlignmentItem",
+          function(x, sequences = FALSE, metadata = FALSE, ...) {
+    mcols_df <- as.data.frame(GRanges(x), ...)
+    mcols_df[, "bases"] <- x@bases
+    mcols_df[, "repeat_class"] <- x@repeat_class
+    if (sequences)
+        mcols_df[, "sequence"] <- x@sequence
+    if (metadata) {
+        md <- metadata(x)
+        mcols_df[, names(md)] <- md
+    }
+    data.frame(mcols_df,
+               stringsAsFactors = FALSE)
+})
