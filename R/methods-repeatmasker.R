@@ -37,6 +37,10 @@
         } else if (length(d) == 14) {
             ## 14: complement included
             names(d) <- .aln_header
+        } else if (length(d) == 15) {
+            ## Assume last column is irrelevant
+            d <- d[1:14]
+            names(d) <- .aln_header
         }
         d$matching_repeat <- unlist(strsplit(d$repeat_label, "#"))[1]
         d$repeat_class <- unlist(strsplit(d$repeat_label, "#"))[2]
@@ -190,7 +194,6 @@ setMethod("readRepeatMaskerSummary", signature = "character", definition = funct
         message(aln)
         return (NULL)
     }
-
     data$query_seq <- paste0(seqs[seq(1, length(seqs), 2)], collapse = "")
     data$subject_seq <- paste0(seqs[seq(2, length(seqs), 2)], collapse = "")
 
