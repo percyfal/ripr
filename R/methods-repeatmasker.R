@@ -12,7 +12,7 @@
 .numeric_columns <- c("score", "divergence", "deletions", "insertions", "query_start",
                       "query_end", "subject_start", "subject_end")
 
-## Scan a summary line or alignment header line. Note that they are
+## Scan a annotation line or alignment header line. Note that they are
 ## slightly different in that the summary file contains an extra
 ## column for repeat class/family, which often is excluded in
 ## alignments
@@ -88,7 +88,9 @@
         query_seq <- BStringSet(data$query_seq)
     if ("subject_seq" %in% colnames(data))
         subject_seq <- BStringSet(data$subject_seq)
-
+    i.na <- is.na(data$query_start) | is.na(data$query_end) | is.na(data$subject_start) | is.na(data$subject_end)
+    if (any(i.na))
+        sprintf("%s ", which(i.na))
     query <- AlignmentItem(
         seqnames = S4Vectors::Rle(data$query_name, rep(1, length(data$query_name))),
         ranges = IRanges::IRanges(start = data$query_start,
@@ -110,22 +112,22 @@
     )
     list(query = query, subject = subject)
 }
-##' Read repeatmasker summary output
+##' Read repeatmasker annotation output
 ##'
 ##' @param filename File to parse
 ##' @param ... Arguments to pass to data access functions
 ##'
 ##' @export
-##' @rdname readRepeatMaskerSummary
+##' @rdname readRepeatMaskerAnnotation
 ##'
-setGeneric("readRepeatMaskerSummary", function(filename, ...)
-    standardGeneric("readRepeatMaskerSummary"))
+setGeneric("readRepeatMaskerAnnotation", function(filename, ...)
+    standardGeneric("readRepeatMaskerAnnotation"))
 
 ##'
-##' @rdname readRepeatMaskerSummary
+##' @rdname readRepeatMaskerAnnotation
 ##' @export
 ##'
-setMethod("readRepeatMaskerSummary", signature = "character", definition = function (filename, ...) {
+setMethod("readRepeatMaskerAnnotation", signature = "character", definition = function (filename, ...) {
     start_time <- Sys.time()
     con <- file(filename, "r")
     on.exit(close(con))
@@ -287,3 +289,40 @@ setMethod("readRepeatMaskerAlignment", signature = "character",
         linkage_id = as.character(data$linkage_id)
     )
 })
+
+##' asRepeatMaskerAnnotation
+##'
+##' Convert AlignmentPairs or AlignmentPairsList into RepeatMasker Annotation format
+##'
+##'
+##' @param obj AlignmentPairs or AlignmentPairsList object
+##' @param ...
+##' @return data frame with columns corresponding to RepeatMasker Annotation format
+##' @author Per Unneberg
+##'
+##' @export
+##' @rdname asRepeatMaskerAnnotation
+##'
+asRepeatMaskerAnnotation <- function(obj) {
+    cols <- c("score", "divergence", "deletions", "insertions",
+              "query.seqnames", "query.start", "query.end",
+              "query.bases", "query.strand", "subject.seqnames",
+              "subject.repeat_class", "subject.start", "subject.end",
+              "subject.bases", "linkage_id")
+    x <- as.data.frame(obj)
+    y <- x[, cols]
+
+    ## Add parentheses to query.bases and subject.bases
+    y$query.bases <- paste("(", y$query.bases, ")", sep = "")
+    y$subject.bases <- paste("(", y$subject.bases, ")", sep = "")
+
+    ## shift subject columns for inverse hits
+    i <- y$query.strand == "-"
+    tmp <- y[i, ]$subject.start
+    y[i, ]$subject.start <- y[i, ]$subject.bases
+    y[i, ]$subject.bases <- tmp
+
+    y$query.strand <- as.character(y$query.strand)
+    y[i, ]$query.strand <- "C"
+    y
+}
