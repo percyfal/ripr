@@ -172,3 +172,59 @@ setMethod("calculateRIP", c("AlignmentPairs", "DNAStringSetOrMissing"),
               rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...),
               rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...))
 })
+
+##' windowScore
+##'
+##'
+##'
+##' @param x
+##' @param ref
+##' @param window
+##' @param step
+##' @param which
+##' @param ... windows metadata
+##'
+##' @return GRanges
+##'
+##'
+setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
+          function(x, ref, window.width = 10000L, window.step = NULL,
+                   which = c("rip", "repeat.content", "gc"), metadata = FALSE, ...) {
+    dots <- list(...)
+    which <- match.arg(which, c("rip", "repeat.content", "gc.content"), several.ok = TRUE)
+    if (is.null(window.step)) window.step <- window.width
+    windows <- unlist(slidingWindows(ref, width = window.width, step = window.step))
+    windows$window <- unlist(seq_along(seqnames(windows)))
+    if ("rip" %in% which) {
+        message("Calculating rip scores")
+        arglist <- list(x = AlignmentItem(windows), ref = ref, sequence = FALSE,
+                        metadata = metadata)
+        arglist <- append(arglist, dots[which(names(dots) %in% names(formals(count)))])
+        .rip <- do.call(calculateRIP, arglist)
+        windows$rip.product <- .rip$rip.product
+        windows$rip.substrate <- .rip$rip.substrate
+        windows$rip.composite <- .rip$rip.composite
+    }
+    if ("repeat.content" %in% which) {
+        message("Calculating repeat content")
+        windows$repeats.observed <- NA
+        ## Find overlaps between query annotations (i.e. repeats) and windows
+        hits <- findOverlaps(windows, query(x), ignore.strand = TRUE)
+        obs <- c(by(as.data.frame(hits), as.data.frame(hits)$queryHits,
+                    function(h){
+            sum(width(intersect(ranges(query(x)[h$subjectHits]),
+                                reduce(ranges(windows[h$queryHits])))))}))
+        windows[as.integer(names(obs))]$repeats.observed <- obs
+        ## Calculate expected repeats based on 1. genome-wide estimate
+        windows$repeats.expected <- sum(windows$repeats.observed, na.rm=TRUE) / sum(width(gr)) * width(windows)
+        total.repeats <- tapply(windows, seqnames(windows),
+                                function(x) {sum(x$repeats.observed, na.rm = TRUE) / sum(width(x))})
+        windows$repeats.expected.chr <- total.repeats[as.integer(match(seqnames(windows), names(total.repeats)))] * width(windows)
+    }
+    if ("gc.content" %in% which) {
+        message("Calculating gc content")
+        windows$gc <- unlist(lapply(subseqByRef(windows, genomes[[1]]),
+                                    function(x) {sum(alphabetFrequency(x)[c("G", "C")]) / length(x) }))
+    }
+    windows
+})

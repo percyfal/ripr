@@ -135,3 +135,19 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
            function(x, ref, sequence = FALSE,
                     metadata = FALSE, ...)
     standardGeneric("calculateRIP"))
+
+
+##' windowScore
+##'
+##' @param x
+##' @param ref
+##' @param width
+##' @param step
+##' @param which
+##'
+##' @export
+##' @rdname windowScore
+##'
+setGeneric("windowScore", signature = c("x", "ref"),
+           function(x, ref, window.width = 10000L, window.step = NULL, which = "rip", ...)
+    standardGeneric("windowScore"))

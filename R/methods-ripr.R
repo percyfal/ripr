@@ -30,7 +30,7 @@ NULL
 ##' @export
 ##'
 RIPProductIndex <- function(x, ...) {
-    counts <- count(x, ...)
+    counts <- count(x, width = 2, ...)
     TpA <- counts[, "TA"]
     ApT <- counts[, "AT"]
     TpA / ApT
@@ -47,7 +47,7 @@ RIPProductIndex <- function(x, ...) {
 ##' @export
 ##'
 RIPSubstrateIndex <- function(x, ...) {
-    counts <- count(x, ...)
+    counts <- count(x, width = 2, ...)
     CpA <- counts[, "CA"]
     TpG <- counts[, "TG"]
     ApC <- counts[, "AC"]
