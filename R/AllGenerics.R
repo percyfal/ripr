@@ -149,5 +149,5 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 ##' @rdname windowScore
 ##'
 setGeneric("windowScore", signature = c("x", "ref"),
-           function(x, ref, window.width = 10000L, window.step = NULL, which = "rip", ...)
+           function(x, ref, window.size = 10000L, window.step = NULL, which = "rip", ...)
     standardGeneric("windowScore"))

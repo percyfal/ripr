@@ -179,26 +179,36 @@ setMethod("calculateRIP", c("AlignmentPairs", "DNAStringSetOrMissing"),
 ##'
 ##' @param x
 ##' @param ref
-##' @param window
-##' @param step
+##' @param window.size
+##' @param window.step
 ##' @param which
+##' @param metadata.which
 ##' @param ... windows metadata
 ##'
 ##' @return GRanges
 ##'
 ##'
 setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
-          function(x, ref, window.width = 10000L, window.step = NULL,
-                   which = c("rip", "repeat.content", "gc"), metadata = FALSE, ...) {
+          function(x, ref, window.size = 10000L, window.step = NULL,
+                   which = c("rip", "repeat.content", "gc"), metadata.which = NULL,
+                   lambda = list(),
+                   ...) {
     dots <- list(...)
     which <- match.arg(which, c("rip", "repeat.content", "gc.content"), several.ok = TRUE)
-    if (is.null(window.step)) window.step <- window.width
-    windows <- unlist(slidingWindows(ref, width = window.width, step = window.step))
+    if (is.null(window.step)) window.step <- window.size
+    windows <- unlist(slidingWindows(ref, width = window.size, step = window.step))
     windows$window <- unlist(seq_along(seqnames(windows)))
+    windows$window.size <- window.size
+    windows$window.step <- window.step
+    seqinfo(windows) <- seqinfo(ref)
+    if (!is.null(metadata)) {
+        metadata.which <- match.arg(metadata.which, names(metadata(x)), several.ok = TRUE)
+        for (md in metadata.which) {mcols(windows)[[md]] <- metadata(x)[[md]]}
+    }
     if ("rip" %in% which) {
         message("Calculating rip scores")
         arglist <- list(x = AlignmentItem(windows), ref = ref, sequence = FALSE,
-                        metadata = metadata)
+                        metadata = FALSE)
         arglist <- append(arglist, dots[which(names(dots) %in% names(formals(count)))])
         .rip <- do.call(calculateRIP, arglist)
         windows$rip.product <- .rip$rip.product
@@ -215,16 +225,22 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
             sum(width(intersect(ranges(query(x)[h$subjectHits]),
                                 reduce(ranges(windows[h$queryHits])))))}))
         windows[as.integer(names(obs))]$repeats.observed <- obs
-        ## Calculate expected repeats based on 1. genome-wide estimate
-        windows$repeats.expected <- sum(windows$repeats.observed, na.rm=TRUE) / sum(width(gr)) * width(windows)
-        total.repeats <- tapply(windows, seqnames(windows),
-                                function(x) {sum(x$repeats.observed, na.rm = TRUE) / sum(width(x))})
-        windows$repeats.expected.chr <- total.repeats[as.integer(match(seqnames(windows), names(total.repeats)))] * width(windows)
+        ## Calculate expected repeats based on 1. genome-wide estimate; proportion repeats times width of windows
+        frac.repeats <- sum(windows$repeats.observed, na.rm = TRUE) / sum(width(windows))
+        windows$repeats.expected <- frac.repeats * width(windows)
+        ## Calculate expected repeats per chromosome
+        frac.repeats.per.chr <- tapply(windows, seqnames(windows),
+                                       function(x) {sum(x$repeats.observed, na.rm = TRUE) / sum(width(x))})
+        windows$repeats.expected.chr <- frac.repeats.per.chr[as.integer(match(seqnames(windows), names(frac.repeats.per.chr)))] * width(windows)
     }
     if ("gc.content" %in% which) {
         message("Calculating gc content")
-        windows$gc <- unlist(lapply(subseqByRef(windows, genomes[[1]]),
+        windows$gc <- unlist(lapply(subseqByRef(windows, ref),
                                     function(x) {sum(alphabetFrequency(x)[c("G", "C")]) / length(x) }))
+    }
+    for (f in names(lambda)) {
+        message("Applying ", f)
+        windows <- lambda[[f]](x, ref, windows)
     }
     windows
 })
