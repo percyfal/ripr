@@ -1,12 +1,3 @@
-##' subseqByRef
-##'
-##' Retrieve subsequences from reference
-##'
-##' @param x GRanges
-##' @param ref DNAStringSet
-##' @param ...
-##' @return
-##' @author Per Unneberg
 ##' @rdname subseqByRef
 ##' @export
 ##'

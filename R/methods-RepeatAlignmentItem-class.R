@@ -36,7 +36,6 @@ RepeatAlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
 ##' @param ...
 ##'
 ##' @return data.frame
-##' @author Per Unneberg
 ##'
 ##' @export
 ##'

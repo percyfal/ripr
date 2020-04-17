@@ -1,9 +1,7 @@
 ##' AlignmentPairsList
 ##'
-##' Convert list to AlignmentPairsList
-##'
 ##' @export
-##' @rdname AligmnentPairsList
+##' @rdname AlignmentPairsList-class
 ##'
 ##' @importFrom methods new
 ##'
@@ -14,14 +12,13 @@ setMethod("AlignmentPairsList", "list",
 
 ##' as.data.frame
 ##'
-##' Convert AlignmentPairsList to data.frame.
-##'
+##' @description Convert AlignmentPairsList to data.frame.
 ##'
 ##' @param x AlignmentPairsList object
 ##' @param sequences include sequences column or not
-##' @param ...
+##' @param ... additional parameters to lapply
+##'
 ##' @return data.frame
-##' @author Per Unneberg
 ##'
 ##' @export
 ##'

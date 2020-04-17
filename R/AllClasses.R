@@ -15,9 +15,9 @@ setClassUnion("DNAStringSetOrMissing", c("DNAStringSet", "missing", "logical", "
 
 ##' Representation of an alignment item
 ##'
-##' Representation of an alignment item. AlignmentItem subclasses and
-##' extends GenomicRanges by adding two additional slots, bases and
-##' sequence.
+##' @description Representation of an alignment item. AlignmentItem
+##'     subclasses and extends GenomicRanges by adding two additional
+##'     slots, bases and sequence.
 ##'
 ##'
 ##' @export
@@ -97,13 +97,19 @@ setMethod("initialize", "RepeatAlignmentItem", function(.Object, ...) {
 
 ##' Representation of an alignment pair
 ##'
+##' @description
 ##' Pairs subclass
 ##'
+##' @details
+##'
+##' The AlignmentPairs class extends the [S4Vectors:Pairs-class]
 ##'
 ##' @export
 ##' @rdname AlignmentPairs-class
 ##'
 ##' @import S4Vectors
+##'
+##' @seealso \link[ripr]{AlignmentPairs-class}
 ##'
 setClass("AlignmentPairs",
          contains = c("Pairs"),
@@ -119,10 +125,13 @@ setMethod("initialize", "AlignmentPairs", function(.Object, ...) {
 
 ##' List of AlignmentPairs instances
 ##'
-##' Subclass of S4Vectors SimpleList, where each entry is an AlignmentPairs
+##' @description Subclass of S4Vectors SimpleList, where each entry is
+##'     an AlignmentPairs object
 ##'
 ##' @export
 ##' @rdname AlignmentPairsList-class
+##'
+##' @import S4Vectors
 ##'
 setClass("AlignmentPairsList",
          contains = "SimpleList",

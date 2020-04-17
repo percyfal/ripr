@@ -1,97 +1,175 @@
-##' AlignmentPairs constructor
+##' @section Constructor:
 ##'
-##' @param query Alignment query
-##' @param subject Alignment subject
+##' \code{AlignmentPairs(query, subject, ...)}: Constructs an AlignmentPairs
+##' object by aligning the vectors \code{query} and \code{subject}
+##'
+##' @param query AlignmentItem
+##' @param subject AlignmentItem
 ##' @param ... Arguments to pass to constructor
+##'
 ##' @return AlignmentPair object
 ##'
 ##' @export
-##' @rdname AlignmentPairs
+##' @rdname AlignmentPairs-class
 ##'
 setGeneric("AlignmentPairs", signature=c("query", "subject"),
            function(query, subject, ...)
     standardGeneric("AlignmentPairs"))
 
 
-##' query generic
+##' Retrieve score from object
 ##'
-##' Generic function to retrieve query
+##' @description For any object with a score slot retrieve the score
+##'     object
 ##'
-##' @param x Object from which to retrieve query
-##' @param ... Arguments to pass to function
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
+##'
+##' @return An AlignmentItem object
+##'
+##' @export
+##' @rdname score
+##'
+setGeneric("score", function(x, ...) standardGeneric("score"))
+
+##' Retrieve query from object
+##'
+##' @description For any object with a query slot retrieve the query
+##'     object
+##'
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
+##'
+##' @return An AlignmentItem object
 ##'
 ##' @export
 ##' @rdname query
 ##'
 setGeneric("query", function(x, ...) standardGeneric("query"))
 
+##' Retrieve subject from object
+##'
+##' @description For any object with a subject slot retrieve the
+##'     subject object
+##'
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
+##'
+##' @return An AlignmentItem object
+##'
+##' @export
+##' @rdname subject
+##'
+setGeneric("subject", function(x, ...) standardGeneric("subject"))
+
 ##' divergence
 ##'
-##' Get divergence from an alignment
+##' @description Get divergence from an alignment
 ##'
 ##' @export
 ##' @rdname divergence
 ##'
-##' @param x Object from which to retrieve divergence
-##' @param ... Arguments to pass to function
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
+##'
+##' @return numeric
 ##'
 setGeneric("divergence", function(x, ...) standardGeneric("divergence"))
 
 ##' deletions
 ##'
+##' @description Get deletions from an alignment
+##'
 ##' @export
 ##' @rdname deletions
 ##'
-##' @param x Object from which to retrieve deletions
-##' @param ... Arguments to pass to function
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
 ##'
+##' @return numeric
 ##'
 setGeneric("deletions", function(x, ...) standardGeneric("deletions"))
 
 ##' insertions
 ##'
+##' @description Get insertions from an alignment
+##'
 ##' @export
 ##' @rdname insertions
 ##'
-##' @param x Object from which to retrieve insertions
-##' @param ... Arguments to pass to function
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
 ##'
+##' @return numeric
 ##'
 setGeneric("insertions", function(x, ...) standardGeneric("insertions"))
 
 ##' linkage_id
 ##'
-##' Get repeatmasker linkage_id from alignment
+##' @description Get repeatmasker linkage_id from alignment
 ##'
 ##' @export
 ##' @rdname linkage_id
 ##'
-##' @param x Object from which to retrieve linkage_id
-##' @param ... Arguments to pass to function
+##' @param x An AlignmentPairs object
+##' @param ... Additional arguments
 ##'
+##' @return character
 ##'
 setGeneric("linkage_id", function(x, ...) standardGeneric("linkage_id"))
 
+
 ##' count
 ##'
-##' Count nucleotides in sequence
+##' @description Count nucleotides in sequence
 ##'
 ##' @export
 ##' @rdname count
 ##'
 ##' @param x Count nucleotides in object x
-##' @param ... Arguments to pass to function
+##' @param width width of oligonucleotide
+##' @param step window step
+##' @param exclude Exclude characters from calculation
+##' @param ... additional arguments
+##'
+##' @param exclude
+##'
+##' @return numeric
 ##'
 setGeneric("count", signature = "x",
            function(x, width = 2, step = 1, exclude = c("X", "-"), ...)
     standardGeneric("count"))
 
 
-##' count
+##' subseqByRef
 ##'
-##' Count nucleotides in sequence
+##' @description Retrieve subsequence from a reference based on
+##'     coordinates in x (typically an GRanges-derived object)
+##'
+##' @param x an AlignmentItem, AlignmentPairs, or GRanges object
+##' @param ref DNAStringSet
+##' @param ... additional parameters
+##'
+##' @return XStringSet
+##'
+##' @examples
+##'
+##' rm.alignment <- system.file("extdata", "repeatmasker_alignment.txt", package="ripr")
+##' genome <- system.file("extdata", "g5129s420.fasta", package="ripr")
+##' alnpair <- readRepeatMaskerAlignment(rm.alignment)
+##' g <- readDNAStringSet(genome)
+##'
+##' ## extract AlignmentItem with query()
+##' s1 <- subseqByRef(query(alnpair), g)
+##' ## pass AlignmentPairs and choose query with 'which'
+##' s2 <- subseqByRef(alnpair, g, which="query")
+##' ## coerce AlignmentItem to GRanges
+##' gr <- GRanges(query(alnpair))
+##' s3 <- subseqByRef(gr, g)
+##'
 ##'
 ##' @export
+##'
 ##' @rdname subseqByRef
 ##'
 setGeneric("subseqByRef", signature = c("x", "ref"),
@@ -100,33 +178,42 @@ setGeneric("subseqByRef", signature = c("x", "ref"),
 
 
 
-##' AlignmentPairsList
+##' @section Constructor:
 ##'
-##' List of AlignmentPairs items
+##' \code{AlignmentPairsList(obj, ...)}: Constructs an
+##' AlignmentPairsList object from the input
 ##'
-##' @param obj object to convert
-##' ##' @param ...
-##' @return
-##' @author Per Unneberg
+##' @param obj list
+##' @param ... ellipsis
+##'
 ##' @export
-##' @rdname AlignmentPairsList
+##' @rdname AlignmentPairsList-class
+##'
+##' @return AlignmentPairsList object
 ##'
 setGeneric("AlignmentPairsList", signature = c("obj"),
            function(obj, ...)
     standardGeneric("AlignmentPairsList"))
 
 
-
-
+## FIXME: remove sequence parameter alltogether?
 
 ##' calculateRIP
 ##'
-##' calculate RIP scores
+##' @description calculate multiple RIP scores
 ##'
-##' @param x
-##' @param sequences
-##' @param metadata
-##' @param ...
+##' @param x an AlignmentPairs, DNAStringSet object or NULL
+##' @param ref a DNAStringSet object corresponding to an AlignmentItem
+##'     in x, by default the query
+##' @param sequence OBSOLETE?
+##' @param metadata boolean; whether or not to add metadata(x) to
+##'     final output
+##' @param ... additional parameters passed to any of the RIP
+##'     functions \code{\link[ripr]{RIPProductIndex}},
+##'     \code{\link[ripr]{RIPSubstrateIndex}}, and
+##'     \code{\link[ripr]{RIPCompositeIndex}}
+##'
+##' @return data.frame
 ##'
 ##' @export
 ##' @rdname calculateRIP
@@ -139,14 +226,26 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 
 ##' windowScore
 ##'
-##' @param x
-##' @param ref
-##' @param width
-##' @param step
-##' @param which
+##' @description calculate scores in windows
+##'
+##' @details Apply a sliding window to a sequence object and calculate
+##'     different scores. Scores include RIP, repeat content, and GC
+##'     content.
 ##'
 ##' @export
 ##' @rdname windowScore
+##'
+##' @param x An AlignmentPairs object
+##' @param ref A DNAStringSet object corresponding to the subject
+##'     reference
+##' @param window.size window size
+##' @param window.step window step size
+##' @param which which score to calculate; any of rip, repeat.content,
+##'     and gc
+##' @param ... additional parameters
+##'
+##' @return GRanges - window ranges with values consisting of
+##'     different scores
 ##'
 setGeneric("windowScore", signature = c("x", "ref"),
            function(x, ref, window.size = 10000L, window.step = NULL, which = "rip", ...)

@@ -15,16 +15,19 @@ setMethod("count", "XStringSet",
 
 ##' slidingWindows
 ##'
+##' @description Generate a compressedGRangesList object corresponding
+##'     to a sliding window
 ##'
-##'
-##' @param x
-##' @param width
-##' @param step
+##' @param x DNAStringSet object on which to generate sliding windows
+##' @param width window size
+##' @param step step size
 ##'
 ##' @importFrom IRanges slidingWindows
 ##' @importFrom GenomicRanges seqinfo
 ##'
 ##' @return compressedGRangesList object
+##'
+##' @seealso \code{\link[IRanges]{slidingWindows}}
 ##'
 setMethod("slidingWindows", "DNAStringSet", function(x, width, step = 1L) {
     ## Convert DNAStringSet to GRanges based on seqinfo

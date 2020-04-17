@@ -1,3 +1,7 @@
+##'
+##' methods-repeatmasker
+##'
+##'
 .header <- c("score", "divergence", "deletions",
              "insertions", "query_name", "query_start",
              "query_end", "query_bases", "complement",
@@ -296,9 +300,8 @@ setMethod("readRepeatMaskerAlignment", signature = "character",
 ##'
 ##'
 ##' @param obj AlignmentPairs or AlignmentPairsList object
-##' @param ...
+##' 
 ##' @return data frame with columns corresponding to RepeatMasker Annotation format
-##' @author Per Unneberg
 ##'
 ##' @export
 ##' @rdname asRepeatMaskerAnnotation

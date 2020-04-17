@@ -1,10 +1,17 @@
-##' AlignmentItem
+##' @section Constructor:
 ##'
-##' AlignmentItem constructor
+##' \code{AlignmentItem(seqnames=NULL, ranges=NULL, strand=NULL, ...,
+##'   seqlengths=NULL, seqinfo=NULL, bases=NULL, sequence=NULL)}:
+##'   Creates an AligmentItem object.
 ##'
+##' The constructor uses the same arguments as
+##' \code{\link[GenomicRanges]{GRanges}} constructor and adds two new arguments:
 ##'
-##' @export
-##' @rdname AlignmentItem
+##' \code{bases} \code{NULL} or an integer vector with bases from
+##'   alignment end to end of sequence
+##'
+##' \code{sequence} \code{NULL} or an XStringSet object containing the
+##'   bases of the alignment item
 ##'
 ##'
 ##' @param seqnames sequence names
@@ -15,6 +22,22 @@
 ##' @param seqinfo Seqinfo object
 ##' @param bases bases from alignment end point to end of sequence
 ##' @param sequences XStringSet sequences
+##'
+##'
+##' @examples
+##'
+##' AlignmentItem(
+##'   Rle("chr1"),
+##'   ranges=IRanges(names=c("chr1", "chr1"), start=c(10, 20), end=c(30, 22)),
+##'   bases=as.integer(c(20,18)), strand=c("+", "+")
+##' )
+##'
+##' @return AlignmentItem
+##'
+##' @export
+##' @rdname AlignmentItem-class
+##'
+##' @seealso \code{\link[GenomicRanges]{GRanges}}
 ##'
 AlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                           ..., seqlengths=NULL, seqinfo=NULL, bases=NULL,
@@ -45,13 +68,6 @@ setMethod("count", "AlignmentItem",
 
 ##' subseqByRef
 ##'
-##' Retrieve subsequences from reference
-##'
-##' @param x AlignmentItem
-##' @param ref DNAStringSet
-##' @param ...
-##' @return
-##' @author Per Unneberg
 ##' @rdname subseqByRef
 ##' @export
 ##'
@@ -66,10 +82,9 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 ##' @param x AlignmentItem object
 ##' @param sequences include sequences column or not
 ##' @param metadata include metadata or not
-##' @param ...
+##' @param ... additional arguments to as.data.frame
 ##'
 ##' @return data.frame
-##' @author Per Unneberg
 ##'
 ##' @export
 ##'
@@ -87,15 +102,7 @@ setMethod("as.data.frame", "AlignmentItem",
                stringsAsFactors = FALSE)
 })
 
-
-
-
-
 ##' calculateRIP
-##'
-##' @param x
-##' @param ref
-##' @param ...
 ##'
 ##' @export
 ##' @rdname calculateRIP

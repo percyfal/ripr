@@ -1,32 +1,12 @@
-#' ripr: A package for calculating rip statistics
-#'
-#' The ripr package provides functionality for calculating rip statistics
-#'
-#'
-#' @section ripr functions:
-#'
-#' plotRip
-#'
-#' @docType package
-#' @name ripr
-#'
-#' @import methods
-#'
-NULL
-
-
-### ------------------------------
-### RIP functions
-###
-
 ##' Calculate RIP Product Index
 ##'
-##' Calculate RIP product index defined as TpA / ApT
+##' @description Calculate RIP product index defined as TpA / ApT
 ##'
 ##' @param x an AligmnentPairs, AlignmentItem or XStringSet object
-##' @param ...
+##' @param ... arguments to pass to count
+##'
 ##' @return RIP product index
-##' @author Per Unneberg
+##'
 ##' @export
 ##'
 RIPProductIndex <- function(x, ...) {
@@ -38,12 +18,13 @@ RIPProductIndex <- function(x, ...) {
 
 ##' Calculate RIP Substrate Index
 ##'
-##' Calculate RIP Substrate Index defined as (CpA + TpG) / (ApC + GpT)
+##' @description Calculate RIP Substrate Index defined as (CpA + TpG) / (ApC + GpT)
 ##'
 ##' @param x an AligmnentPairs, AlignmentItem or XStringSet object
-##' @param ...
+##' @param ... arguments to pass to count
+##'
 ##' @return RIP Substrate Index
-##' @author Per Unneberg
+##'
 ##' @export
 ##'
 RIPSubstrateIndex <- function(x, ...) {
@@ -57,12 +38,14 @@ RIPSubstrateIndex <- function(x, ...) {
 
 ##' Calculate RIP Composite Index
 ##'
-##' Calculate RIP Composite Index defined as RIP Product Index minus RIP Substrate Index
+##' @description Calculate RIP Composite Index defined as RIP Product
+##'     Index minus RIP Substrate Index
 ##'
 ##' @param x  an AligmnentPairs, AlignmentItem or XStringSet object
-##' @param ...
+##' @param ... additional arguments for RIPProductIndex and RIPSubstrateIndex
+##'
 ##' @return RIP Composite Index
-##' @author Per Unneberg
+##'
 ##' @export
 ##'
 RIPCompositeIndex <- function(x, ...) {
