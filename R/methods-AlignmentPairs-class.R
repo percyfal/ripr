@@ -231,7 +231,7 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
         ## Calculate expected repeats per chromosome
         frac.repeats.per.chr <- tapply(windows, seqnames(windows),
                                        function(x) {sum(x$repeats.observed, na.rm = TRUE) / sum(width(x))})
-        windows$repeats.expected.chr <- frac.repeats.per.chr[as.integer(match(seqnames(windows), names(frac.repeats.per.chr)))] * width(windows)
+        windows$repeats.expected.chr <- as.numeric(frac.repeats.per.chr[as.integer(match(seqnames(windows), names(frac.repeats.per.chr)))] * width(windows))
     }
     if ("gc.content" %in% which) {
         message("Calculating gc content")
