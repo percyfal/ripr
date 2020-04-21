@@ -1,7 +1,7 @@
 ##' @section Constructor:
 ##'
-##' \code{AlignmentItem(seqnames=NULL, ranges=NULL, strand=NULL, ...,
-##'   seqlengths=NULL, seqinfo=NULL, bases=NULL, sequence=NULL)}:
+##' \code{AlignmentItem(seqnames = NULL, ranges = NULL, strand = NULL,}
+##' \code{..., seqlengths=NULL, seqinfo=NULL, bases=NULL, sequence=NULL)}:
 ##'   Creates an AligmentItem object.
 ##'
 ##' The constructor uses the same arguments as
@@ -21,14 +21,13 @@
 ##' @param seqlengths sequence lengths
 ##' @param seqinfo Seqinfo object
 ##' @param bases bases from alignment end point to end of sequence
-##' @param sequences XStringSet sequences
-##'
+##' @param sequence XStringSet sequence representing alignment
 ##'
 ##' @examples
 ##'
 ##' AlignmentItem(
-##'   Rle("chr1"),
-##'   ranges=IRanges(names=c("chr1", "chr1"), start=c(10, 20), end=c(30, 22)),
+##'   S4Vectors::Rle("chr1"),
+##'   ranges=IRanges::IRanges(names=c("chr1", "chr1"), start=c(10, 20), end=c(30, 22)),
 ##'   bases=as.integer(c(20,18)), strand=c("+", "+")
 ##' )
 ##'
@@ -36,6 +35,8 @@
 ##'
 ##' @export
 ##' @rdname AlignmentItem-class
+##'
+##' @importFrom GenomicRanges GRanges
 ##'
 ##' @seealso \code{\link[GenomicRanges]{GRanges}}
 ##'
@@ -52,14 +53,9 @@ AlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
     ai
 }
 
-##' count
 ##'
 ##' @export
 ##' @rdname count
-##'
-##' @param width width of oligonucleotide
-##' @param step window step
-##' @param exclude Exclude characters from calculation
 ##'
 setMethod("count", "AlignmentItem",
           function(x, width = 2, step = 1, exclude = c("X", "-"), ...) {
@@ -85,6 +81,8 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 ##' @param ... additional arguments to as.data.frame
 ##'
 ##' @return data.frame
+##'
+##' @importFrom GenomicRanges GRanges
 ##'
 ##' @export
 ##'

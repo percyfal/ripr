@@ -132,8 +132,6 @@ setGeneric("linkage_id", function(x, ...) standardGeneric("linkage_id"))
 ##' @param exclude Exclude characters from calculation
 ##' @param ... additional arguments
 ##'
-##' @param exclude
-##'
 ##' @return numeric
 ##'
 setGeneric("count", signature = "x",
@@ -157,14 +155,14 @@ setGeneric("count", signature = "x",
 ##' rm.alignment <- system.file("extdata", "repeatmasker_alignment.txt", package="ripr")
 ##' genome <- system.file("extdata", "g5129s420.fasta", package="ripr")
 ##' alnpair <- readRepeatMaskerAlignment(rm.alignment)
-##' g <- readDNAStringSet(genome)
+##' g <- Biostrings::readDNAStringSet(genome)
 ##'
 ##' ## extract AlignmentItem with query()
 ##' s1 <- subseqByRef(query(alnpair), g)
 ##' ## pass AlignmentPairs and choose query with 'which'
 ##' s2 <- subseqByRef(alnpair, g, which="query")
 ##' ## coerce AlignmentItem to GRanges
-##' gr <- GRanges(query(alnpair))
+##' gr <- GenomicRanges::GRanges(query(alnpair))
 ##' s3 <- subseqByRef(gr, g)
 ##'
 ##'
@@ -232,9 +230,6 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 ##'     different scores. Scores include RIP, repeat content, and GC
 ##'     content.
 ##'
-##' @export
-##' @rdname windowScore
-##'
 ##' @param x An AlignmentPairs object
 ##' @param ref A DNAStringSet object corresponding to the subject
 ##'     reference
@@ -246,6 +241,9 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 ##'
 ##' @return GRanges - window ranges with values consisting of
 ##'     different scores
+##'
+##' @export
+##' @rdname windowScore
 ##'
 setGeneric("windowScore", signature = c("x", "ref"),
            function(x, ref, window.size = 10000L, window.step = NULL, which = "rip", ...)

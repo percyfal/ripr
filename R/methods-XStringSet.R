@@ -1,11 +1,6 @@
-##' count
 ##'
 ##' @export
 ##' @rdname count
-##'
-##' @param width width of oligonucleotide
-##' @param step window step
-##' @param exclude Exclude characters from calculation
 ##'
 setMethod("count", "XStringSet",
           function(x, width = 2, step = 1, exclude = c("X", "-"), ...) {
@@ -22,8 +17,9 @@ setMethod("count", "XStringSet",
 ##' @param width window size
 ##' @param step step size
 ##'
-##' @importFrom IRanges slidingWindows
-##' @importFrom GenomicRanges seqinfo
+##' @importFrom IRanges IRanges
+##' @importFrom GenomicRanges GRanges
+##' @importFrom GenomeInfoDb seqinfo
 ##'
 ##' @return compressedGRangesList object
 ##'
@@ -32,5 +28,5 @@ setMethod("count", "XStringSet",
 setMethod("slidingWindows", "DNAStringSet", function(x, width, step = 1L) {
     ## Convert DNAStringSet to GRanges based on seqinfo
     y <- GRanges(seqnames = seqinfo(x)@seqnames, ranges = IRanges(start = 1, end = seqinfo(x)@seqlengths))
-    slidingWindows(y, width = width, step = step)
+    IRanges::slidingWindows(y, width = width, step = step)
 })

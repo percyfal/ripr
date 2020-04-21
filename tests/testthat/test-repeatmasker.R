@@ -3,7 +3,7 @@ context("Test repeatmasker-related functions")
 rm.summary <- system.file("extdata", "repeatmasker_summary.txt", package="ripr")
 rm.alignment <- system.file("extdata", "repeatmasker_alignment.txt", package="ripr")
 
-ap <- readRepeatMaskerSummary(rm.summary)
+ap <- readRepeatMaskerAnnotation(rm.summary)
 ap2 <- readRepeatMaskerAlignment(rm.alignment)
 
 test_that("repeatmasker alignment file returns AlignmentPairs object", {

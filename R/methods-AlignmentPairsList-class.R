@@ -9,13 +9,11 @@ setMethod("AlignmentPairsList", "list",
           function(obj) new("AlignmentPairsList", listData = obj))
 
 
-
 ##' as.data.frame
 ##'
 ##' @description Convert AlignmentPairsList to data.frame.
 ##'
 ##' @param x AlignmentPairsList object
-##' @param sequences include sequences column or not
 ##' @param ... additional parameters to lapply
 ##'
 ##' @return data.frame

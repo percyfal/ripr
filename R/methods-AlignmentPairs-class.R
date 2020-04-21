@@ -96,12 +96,12 @@ setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
 ##' @param x AlignmentPairs object
 ##' @param sequences include sequences column or not
 ##' @param metadata include metadata or not
-##' @param ...
+##' @param ... additional arguments
 ##'
 ##' @return data.frame
 ##'
 ##' @export
-##' 
+##'
 setMethod("as.data.frame", "AlignmentPairs",
           function(x, sequences = FALSE, metadata = FALSE, ...) {
     mcols_df <- as.data.frame(mcols(x), ...)
@@ -120,6 +120,14 @@ setMethod("as.data.frame", "AlignmentPairs",
 ##'
 ##' @export
 ##' @rdname calculateRIP
+##'
+##'
+##' @examples
+##'
+##' rm.alignment <- system.file("extdata", "repeatmasker_alignment.txt", package="ripr")
+##' genome <- Biostrings::readDNAStringSet(system.file("extdata", "g5129s420.fasta", package="ripr"))
+##' ap <- readRepeatMaskerAlignment(rm.alignment)
+##' cr <- calculateRIP(ap, genome)
 ##'
 setMethod("calculateRIP", c("AlignmentPairs", "DNAStringSetOrMissing"),
           function(x, ref = NULL, sequence = FALSE, metadata = FALSE, ...) {

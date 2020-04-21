@@ -1,10 +1,12 @@
-##'
 ##' methods-repeatmasker
 ##'
+##' Description Methods for dealing with RepeatMasker output
 ##'
+##' Details
+##'
+##' @name RepeatMasker methods
 ##'
 NULL
-
 
 .header <- c("score", "divergence", "deletions",
              "insertions", "query_name", "query_start",
@@ -232,11 +234,8 @@ setGeneric("readRepeatMaskerAlignment", function(filename, ...)
 ##' @rdname readRepeatMaskerAlignment
 ##' @export
 ##'
-##'
-##' @param filename input file name
 ##' @param num_aln number of alignments to read
 ##' @param update_freq print progress message every update_freq alignment
-##' @param ...
 ##'
 setMethod("readRepeatMaskerAlignment", signature = "character",
           definition = function (filename, num_aln = NULL,

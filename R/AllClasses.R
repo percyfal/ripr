@@ -19,7 +19,6 @@ setClassUnion("DNAStringSetOrMissing", c("DNAStringSet", "missing", "logical", "
 ##'     subclasses and extends GenomicRanges by adding two additional
 ##'     slots, bases and sequence.
 ##'
-##'
 ##' @export
 ##' @rdname AlignmentItem-class
 ##'
@@ -55,15 +54,19 @@ setMethod(GenomicRanges:::extraColumnSlotNames, "AlignmentItem",
 
 ##' Representation of a repeat library alignment item
 ##'
-##' RepeatAlignmentItem subclasses and extends AlignmentItem by adding
-##' one additional slot for repeat_class. Note that the RepeatMasker
-##' library fasta header uses the repeat name (here seqname) and the
-##' repeat class to identify the sequence, concatenated by a #. Hence,
-##' in order to match an entry in RepeatAlignmentItem to a library, a
-##' helper function to convert between naming systems is needed.
+##' @description RepeatAlignmentItem subclasses and extends
+##'     AlignmentItem by adding one additional slot for repeat_class.
+##'     Note that the RepeatMasker library fasta header uses the
+##'     repeat name (here seqname) and the repeat class to identify
+##'     the sequence, concatenated by a #. Hence, in order to match an
+##'     entry in RepeatAlignmentItem to a library, a helper function
+##'     to convert between naming systems is needed.
 ##'
 ##' @export
 ##' @rdname RepeatAlignmentItem-class
+##'
+##' @import GenomicRanges
+##' @import Biostrings
 ##'
 setClass("RepeatAlignmentItem",
          representation = representation(
@@ -97,12 +100,11 @@ setMethod("initialize", "RepeatAlignmentItem", function(.Object, ...) {
 
 ##' Representation of an alignment pair
 ##'
-##' @description
-##' Pairs subclass
+##' @description Pairs subclass
 ##'
-##' @details
 ##'
-##' The AlignmentPairs class extends the [S4Vectors:Pairs-class]
+##' @details The AlignmentPairs class extends the
+##'     [S4Vectors:Pairs-class]
 ##'
 ##' @export
 ##' @rdname AlignmentPairs-class
