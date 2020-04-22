@@ -1,0 +1,69 @@
+---
+title: "Repeat Induced Point mutations in R"
+author: "Per Unneberg"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# About
+
+This vignette describes an analysis of Repeat Induced Point (RIP)
+mutations in R.
+
+
+# Data set
+
+The data consists of chromosome 2 and repeatmasker results for three *Neurospora* species:
+
+| Species         | Chromosome name  | Sequence file    | Annotation           | Alignment               |
+|-----------------|------------------|------------------|----------------------|-------------------------|
+| *N.crassa*      | Supercontig_12.2 | crassa_lg2.fasta | crassa_lg2.fasta.out | crassa_lg2.fasta.cat.gz |
+| *N.sitophila*   | 5940pb_lg2       | 5940pb_lg2.fasta | 5940pb_lg2.fasta.out | 5940pb_lg2.fasta.cat.gz |
+| *N.tetrasperma* | 9046pb_lg2       | 9046pb_lg2.fasta | 9046pb_lg2.fasta.out | 9046pb_lg2.fasta.cat.gz |
+
+# R Setup
+
+```{r}
+library(ripr)
+```
+
+# Loading data
+
+We first define genome, annotation and alignment files
+```{r}
+genome.names <- c("5940pb_lg2", "9046pb_lg2", "crassa_lg2")
+genome.files <- system.file("extdata", paste0(genome.names, ".fasta"),
+                            package="ripr")
+rm.annot.files <- system.file("extdata", paste0(genome.names, ".fasta.out"),
+                              package="ripr")
+rm.aln.files <- system.file("extdata", paste0(genome.names, ".fasta.cat.gz"),
+                            package="ripr")
+```
+
+## Genome files
+
+Genome files are loaded with Biostrings::readDNAStringSet.
+
+```{r}
+genomes <- lapply(genome.files, Biostrings::readDNAStringSet)
+names(genomes) <- genome.names
+```
+
+## Annotation files
+
+Repeatmasker annotation files are parsed with the function
+
+```{r}
+rm.annot.ap <- AlignmentPairsList(lapply(rm.annot.files, readRepeatMaskerAnnotation))
+names(rm.annot.ap) <- genome.names
+```
+
+## Alignment files
+
+# Calculating RIP scores
+
+# Plotting the results

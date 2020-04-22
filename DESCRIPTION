@@ -24,5 +24,8 @@ Imports:
 	GenomeInfoDb,
 	Biostrings
 Suggests:
-	testthat
+	testthat,
+	knitr
+VignetteBuilder:
+	knitr
 RoxygenNote: 6.1.1
