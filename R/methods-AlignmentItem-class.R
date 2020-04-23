@@ -74,7 +74,6 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 
 ##' Convert AlignmentItem to data.frame.
 ##'
-##'
 ##' @param x AlignmentItem object
 ##' @param sequences include sequences column or not
 ##' @param metadata include metadata or not
@@ -107,14 +106,46 @@ setMethod("as.data.frame", "AlignmentItem",
 ##'
 setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
           function(x, ref = NULL, sequence = FALSE, metadata = FALSE, ...) {
-    if (missing(ref))
-        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
-              rip.product = RIPProductIndex(x, ...),
-              rip.substrate = RIPSubstrateIndex(x, ...),
-              rip.composite = RIPCompositeIndex(x, ...))
-    else
-        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
-              rip.product = RIPProductIndex(subseqByRef(x, ref), ...),
-              rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...),
-              rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...))
+    if (missing(ref)) {
+        rip.product = RIPProductIndex(x, ...)
+        rip.substrate = RIPSubstrateIndex(x, ...)
+        rip.composite = RIPCompositeIndex(x, ...)
+    } else {
+        rip.product = RIPProductIndex(subseqByRef(x, ref), ...)
+        rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...)
+        rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...)
+    }
+    mcols(x)$rip.product <- rip.product
+    mcols(x)$rip.substrate <- rip.substrate
+    mcols(x)$rip.composite <- rip.composite
+    x
 })
+
+
+
+##' sample
+##'
+##' @description randomly sample positions on a sequence based on ranges
+##'
+##' @export
+##' @rdname sample
+##'
+##' @importFrom IRanges ranges
+##' @importFrom Biostrings DNAStringSet
+##'
+sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL, ...) {
+    if (is.null(sequence))
+        return(base::sample(x, size, replace=replace, prob=prob))
+    stopifnot(inherits(x, "AlignmentItem"))
+    stopifnot(inherits(sequence, "DNAStringSet"))
+    sequence <- unlist(sequence)
+    n <- length(x)
+    w <- sample(width(x), n, replace=TRUE)
+    start <- sample(length(sequence), n)
+    end <- start + w
+    i <- which(end <= length(sequence))
+    message("Dropping ", sum(end>length(sequence)), " ranges that extended beyond sequence end")
+    AlignmentItem(ranges=IRanges(start=start[i], end=end[i]),
+                  seqname=seqnames(x)[i],
+                  sequence=DNAStringSet(lapply(i, function(j) {subseq(sequence, start=start[j], end=end[j])})))
+}

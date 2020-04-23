@@ -13,19 +13,19 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-	methods,
-	ggplot2,
-	tidyr,
-	tidyselect,
-	RColorBrewer,
+	Biostrings,
+	GenomeInfoDb,
 	GenomicRanges (>= 1.32.0),
 	IRanges (>= 2.14.0),
+	RColorBrewer,
 	S4Vectors,
-	GenomeInfoDb,
-	Biostrings
+	ggplot2,
+	methods,
+	tidyr,
+	tidyselect
 Suggests:
-	testthat,
-	knitr
+	knitr,
+	testthat
 VignetteBuilder:
 	knitr
 RoxygenNote: 6.1.1

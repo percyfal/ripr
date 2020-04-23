@@ -47,6 +47,21 @@ setGeneric("score", function(x, ...) standardGeneric("score"))
 ##'
 setGeneric("query", function(x, ...) standardGeneric("query"))
 
+##' Set the query of an object
+##'
+##' @description For any object with a query slot set the
+##'     query
+##'
+##' @param x An AlignmentPairs object
+##' @param value An AlignmentItem object
+##'
+##' @return An AlignmentPairs object
+##'
+##' @export
+##' @rdname query
+##'
+setGeneric("query<-", function(x, value) standardGeneric("query<-"))
+
 ##' Retrieve subject from object
 ##'
 ##' @description For any object with a subject slot retrieve the
@@ -58,9 +73,24 @@ setGeneric("query", function(x, ...) standardGeneric("query"))
 ##' @return An AlignmentItem object
 ##'
 ##' @export
-##' @rdname subject
+##' @rdname sbjct
 ##'
-setGeneric("subject", function(x, ...) standardGeneric("subject"))
+setGeneric("sbjct", function(x, ...) standardGeneric("sbjct"))
+
+##' Set the subject of an object
+##'
+##' @description For any object with a subject slot set the
+##'     subject
+##'
+##' @param x An AlignmentPairs object
+##' @param value A RepeatAlignmentItem
+##'
+##' @return An AlignmentPairs object
+##'
+##' @export
+##' @rdname sbjct
+##'
+setGeneric("sbjct<-", function(x, value) standardGeneric("sbjct<-"))
 
 ##' divergence
 ##'
@@ -203,15 +233,12 @@ setGeneric("AlignmentPairsList", signature = c("obj"),
 ##' @param x an AlignmentPairs, DNAStringSet object or NULL
 ##' @param ref a DNAStringSet object corresponding to an AlignmentItem
 ##'     in x, by default the query
-##' @param sequence OBSOLETE?
-##' @param metadata boolean; whether or not to add metadata(x) to
-##'     final output
 ##' @param ... additional parameters passed to any of the RIP
 ##'     functions \code{\link[ripr]{RIPProductIndex}},
 ##'     \code{\link[ripr]{RIPSubstrateIndex}}, and
 ##'     \code{\link[ripr]{RIPCompositeIndex}}
 ##'
-##' @return data.frame
+##' @return AlignmentPairs with RIP score data columns
 ##'
 ##' @export
 ##' @rdname calculateRIP

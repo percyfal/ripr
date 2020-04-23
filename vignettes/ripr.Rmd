@@ -7,17 +7,182 @@ vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+biblio-style: plain
+bibliography: bibliography.bib
 ---
 
 # About
 
 This vignette describes an analysis of Repeat Induced Point (RIP)
-mutations in R.
+mutations in R using the `ripr` package. `ripr` contains functionality
+for parsing RepeatMasker output, calculating RIP scores, and plotting
+scores along chromosomes in Manhattan-like plots. Before we start with
+the example analysis, we describe how `ripr` represents RepeatMasker
+output.
+
+## R setup
+
+```{r knitr-setup, echo=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE,
+                      fig.width=8, fig.height=6, autodep=TRUE,
+                      cache=TRUE, include=TRUE, eval=TRUE, tidy=FALSE,
+                      cache.extra=packageVersion('tufte'), dev=c('png'))
+knitr::knit_hooks$set(inline = function(x) {
+  prettyNum(x, big.mark=" ")
+})
+```
 
 
-# Data set
+```{r r-setup}
+library(ripr)
+library(ggplot2)
+library(viridis)
+library(plyr)
+```
 
-The data consists of chromosome 2 and repeatmasker results for three *Neurospora* species:
+## On object representation of RepeatMasker output
+
+RepeatMasker screens sequences for repeats and low-complexity regions.
+`ripr` contains functions to parse two of RepeatMasker's output files,
+namely the annotation and alignment results. These files pair
+coordinates in the input sequence that is scanned for repeats (here,
+the genome sequence) with coordinates in the repeat sequence that is
+defined in the RepeatMasker library. The input sequence will
+henceforth be referred to as the *query* and the repeat sequence the
+*subject*.
+
+`ripr` stores the results from RepeatMasker output as an
+`AlignmentPairs` object, which is a subclass of the Bioconductor class
+`S4Vectors::Pairs`. A `Pairs` object aligns two vectors along slot
+names `first` and `second`, and the `AlignmentPairs` object adds extra
+slots related to RepeatMasker output. In the following sections we
+parse RepeatMasker output and explain the additional slot names.
+
+For more information about RepeatMasker and its output formats, see
+[@repeatmasker_docs].
+
+
+### Annotation output
+
+The RepeatMasker annotation output is a simple tabular format where
+each line consists of a query-subject pair and additional statistics
+such as score and percentage divergence:
+
+<div style="font-size:xx-small">
+``` {r head-annotation-file, comment=NA, echo=FALSE}
+cat(system(paste("head -5  ", system.file("extdata", "crassa_lg2.fasta.out", package="ripr")), intern=TRUE), sep="\n")
+```
+</div>
+
+The annotation files are parsed with the function
+`readRepeatMaskerAnnotation`. Each line is converted to an entry in an
+`AlignmentPairs` object. `AlignmentPairs` has slot names `score`,
+`divergence`, `deletions` and `insertions` corresponding to the first
+four columns above, and a slot `linkage_id` corresponding to the last
+column. There are also two slots `query` and `subject` that correspond
+to the query and subject columns. However, for compactness and ease of
+management, these slots are populated by
+`GenomicRanges::GRanges`-derived objects `ripr::AlignmentItem` and
+`ripr::RepeatAlignmentItem`. We parse the an example file and show the
+resulting output:
+
+```{r read-annotation-file, warning=FALSE, message=FALSE}
+ap <- readRepeatMaskerAnnotation(system.file("extdata", "crassa_lg2.fasta.out",
+                                 package="ripr"))
+head(ap, 2)
+```
+
+The `query` and `subject` slots can be accessed with the `query`
+and `sbjct` accessor functions:
+
+```{r alignmentpairs-accessors}
+qry <- query(ap)
+sbj <- sbjct(ap)
+```
+
+The query object consists of ranges on the genome where RepeatMasker
+has identified repeats:
+
+```{r query-alignmentitem}
+head(qry, 2)
+```
+
+`AlignmentItem` extends `GenomicRanges::GRanges` by adding a slot
+`bases` that stores the *no. of bases in query sequence past the
+ending position of match* [see @repeatmasker_docs, section How to read
+the results]. There is also an additional slot `sequence` that can
+store the actual sequence of the matching region.
+
+
+The subject is a `RepeatAlignmentItem` object, where the only
+difference compared to `AlignmentItem` is that it has an extra slot
+`repeat_class` that stores information about the repeat class, as
+defined by RepeatMasker:
+
+```{r subject-repeatalignmentitem}
+head(sbj, 2)
+```
+
+### Alignment output
+
+The alignment output contains information similar to that in the
+annotation output, but as the names implies also includes alignments:
+
+<div style="font-size:small">
+``` {r head-alignment-file, comment=NA, echo=FALSE}
+alnfile <- system.file("extdata", "crassa_lg2.fasta.cat.gz", package="ripr")
+p1 <- system(paste("zcat ", alnfile, " | head -10"), intern=TRUE)
+p2 <- system(paste("zcat ", alnfile, " | head -34 | tail -8"), intern=TRUE)
+cat(c(p1, "  ...", " ", p2), sep="\n")
+```
+</div>
+
+RepeatMasker alignment files are parsed with the function
+`readRepeatMaskerAlignment`.
+
+```{r read-alignment, warning=FALSE, message=FALSE}
+aln <- readRepeatMaskerAlignment(system.file("extdata", "crassa_lg2.fasta.cat.gz",
+                                 package="ripr"))
+```
+
+As when reading annotation files, the result is an `AlignmentPairs`
+object. Looking at the query, we now see that the `sequence` slot is
+populated with the aligned sequence, including gaps:
+
+```{r get-alignment-query}
+alnqry <- query(aln)
+head(alnqry, 2)
+```
+
+It is important to note however, that the annotation and alignment
+files are **not** equivalent, as the RepeatMasker documentation
+clearly states [@repeatmasker_docs, section Discrepancies between
+alignments and annotation]:
+
+	Most discrepancies between alignments and annotation result from
+	adjustments made to produce more legible annotation. This annotation
+	also tends to be closer to the biological reality than the raw
+	cross_match output. For example, adjustments often are necessary when
+	a repeat is fragmented through deletions, insertions, or an inversion.
+	Many subfamilies of repeats closely resemble each other, and when a
+	repeat is fragmented these fragments can be assigned different
+	subfamily names in the raw output. The program often can decide if
+	fragments are derived from the same integrated transposable element
+	and which subfamily name is appropriate (subsequently given to all
+	fragments). This can result in discrepancies in the repeat name and
+	matching positions in the consensus sequence (subfamily consensus
+	sequences differ in length).
+
+The analyses described in this vignette are all based on the
+annotation files, and no further mention will be made of the alignment
+output.
+
+
+# The input data
+
+The data consists of chromosome 2 sequence files and repeatmasker
+results for three *Neurospora* species:
 
 | Species         | Chromosome name  | Sequence file    | Annotation           | Alignment               |
 |-----------------|------------------|------------------|----------------------|-------------------------|
@@ -25,45 +190,110 @@ The data consists of chromosome 2 and repeatmasker results for three *Neurospora
 | *N.sitophila*   | 5940pb_lg2       | 5940pb_lg2.fasta | 5940pb_lg2.fasta.out | 5940pb_lg2.fasta.cat.gz |
 | *N.tetrasperma* | 9046pb_lg2       | 9046pb_lg2.fasta | 9046pb_lg2.fasta.out | 9046pb_lg2.fasta.cat.gz |
 
-# R Setup
 
-```{r}
-library(ripr)
-```
+We define genome and annotation files for loading:
 
-# Loading data
-
-We first define genome, annotation and alignment files
-```{r}
+```{r loading-data}
 genome.names <- c("5940pb_lg2", "9046pb_lg2", "crassa_lg2")
 genome.files <- system.file("extdata", paste0(genome.names, ".fasta"),
-                            package="ripr")
+							package="ripr")
+names(genome.files) <- genome.names
 rm.annot.files <- system.file("extdata", paste0(genome.names, ".fasta.out"),
-                              package="ripr")
-rm.aln.files <- system.file("extdata", paste0(genome.names, ".fasta.cat.gz"),
-                            package="ripr")
+							  package="ripr")
+names(rm.annot.files) <- genome.names
 ```
 
-## Genome files
+Genome files are loaded with `Biostrings::readDNAStringSet`
 
-Genome files are loaded with Biostrings::readDNAStringSet.
-
-```{r}
+```{r genome-files}
 genomes <- lapply(genome.files, Biostrings::readDNAStringSet)
-names(genomes) <- genome.names
 ```
 
-## Annotation files
+and annotations files with `readRepeatMaskerAnnotation`. We also add
+the genome name as a metadata attribute for later access.
 
-Repeatmasker annotation files are parsed with the function
 
-```{r}
-rm.annot.ap <- AlignmentPairsList(lapply(rm.annot.files, readRepeatMaskerAnnotation))
-names(rm.annot.ap) <- genome.names
+```{r load-annotation-files, message=FALSE, warning=FALSE}
+rm.annot.ap <- AlignmentPairsList(
+    lapply(names(rm.annot.files), function(x) {
+        ap <- readRepeatMaskerAnnotation(rm.annot.files[[x]])
+        metadata(ap)$genome <- x
+        ap
+    }))
+names(rm.annot.ap) <- names(rm.annot.files)
+rm.annot.ap
 ```
 
-## Alignment files
+The loading of files was wrapped in a call to `AlignmentPairsList`
+which is a list container for `AlignmentPairs` objects, modelled after
+`GenomicRanges::GRangesList`.
 
-# Calculating RIP scores
 
-# Plotting the results
+## Adjustment of repeat classes
+
+Before proceeding, we look at the repeat classes for all the results.
+
+```{r investigate-repeat-names}
+repeats <- unique(unlist(lapply(rm.annot.ap, function(x) {levels(repeatClass(sbjct(x)))})))
+repeats
+```
+
+We simplify the names and rename levels with `plyr::mapvalues`.
+
+```{r repeat-mapvalues, warning=FALSE, message=FALSE}
+repeats.new <- unlist(lapply(strsplit(repeats, "/"), function(x) {gsub("\\?$", "", x[[1]])}))
+rm.annot.ap <- endoapply(rm.annot.ap, function(x) {
+    sbj <- sbjct(x)
+    repeatClass(sbj) <- mapvalues(repeatClass(sbj), from=repeats, to=repeats.new)
+    sbjct(x) <- sbj
+    x
+})
+```
+
+# RIP index calculation on TE elements
+
+The `ripr` package defines three different RIP metrics:
+
+- **RIP product index:** TA/AT ratio [@margolin_methylated_1998; @@selker_methylated_2003]
+    -   not RIP < 0.8
+    -   RIP > 1.1
+- **RIP substrate index:** (CA + TG) / (AC + GT) ratio  [@margolin_methylated_1998; @@selker_methylated_2003]
+    -   not RIP > 1.1
+    -   RIP < 0.9
+- **RIP composite index:** RIP product index - RIP substrate index [@lewis_relics_2009]
+    -   RIP: positive value
+
+In order to calculate the RIP scores, we need the genome subsequences
+that are defined by the query coordinates in each AlignmentPairs
+object. The `calculateRIP` function takes as input an `AlignmentPairs`
+object, and a genome represented by a `Biostrings::DNAStringSet`
+object. Since we loaded the genomes before, we can proceed to
+calculate the RIP scores:
+
+```{r calculate-rip}
+rip.ls <- endoapply(rm.annot.ap, function(x){
+    calculateRIP(x, genomes[[metadata(x)$genome]])
+})
+```
+
+## RIP index as a function of repeat width
+
+To begin with we investigate the effect of repeat width on the RIP
+composite index score. Typically, signatures of RIP (score > 0) are
+visible first at 400bp (REF: rephrase). We plot the RIP composite
+index versus query width and note that ripped sequences indeed are
+longer.
+
+```{r plot-rip, message=FALSE, warning=FALSE}
+rip.df <- do.call("rbind", lapply(rip.ls, as.data.frame, metadata=TRUE))
+ggplot(rip.df, aes(y=rip.composite, x=query.width)) + geom_point(size=1) + ylim(-3, 3) + facet_wrap(. ~ genome)
+```
+
+## Comparing RIP index to a null distribution
+
+Even though there seem to be a large number of repeats that are
+ripped, we would like to compare
+
+# Window-based analyses
+
+# References

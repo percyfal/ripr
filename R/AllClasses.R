@@ -1,4 +1,5 @@
 setClassUnion("characterOrMissing", c("character", "missing", "logical"))
+setClassUnion("factorOrcharacter", c("factor", "character"))
 setClassUnion("integerOrMissing", c("integer", "missing", "logical"))
 setClassUnion("XStringSetOrMissing", c("XStringSet", "BStringSet", "missing", "logical"))
 setClassUnion("DNAStringSetOrMissing", c("DNAStringSet", "missing", "logical", "NULL"))

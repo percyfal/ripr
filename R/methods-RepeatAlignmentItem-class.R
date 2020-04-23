@@ -76,3 +76,64 @@ setMethod("as.data.frame", "RepeatAlignmentItem",
     data.frame(mcols_df,
                stringsAsFactors = FALSE)
 })
+
+
+
+##' repeatClass
+##'
+##' @description get the repeat_class slot
+##'
+##' @param x a RepeatAlignmentItem
+##'
+##' @return factor
+##'
+##' @export
+##' @rdname repeatClass
+##'
+setGeneric("repeatClass", signature = c("x"),
+           function(x)
+    standardGeneric("repeatClass"))
+
+
+##'
+##' @rdname repeatClass
+##' @export
+##'
+setMethod("repeatClass", "RepeatAlignmentItem",
+          function(x) {
+    x@repeat_class
+})
+
+
+##' repeatClass<-
+##'
+##' @description set the repeat_class slot
+##'
+##' @param x a RepeatAlignmentItem
+##' @param value a factor or character vector
+##'
+##' @return factor
+##'
+##' @export
+##' @rdname repeatClass
+##'
+setGeneric("repeatClass<-",
+           signature = c("x", "value"),
+           function(x, value)
+    standardGeneric("repeatClass<-"))
+
+
+
+##'
+##' @rdname repeatClass
+##' @export
+##'
+setReplaceMethod("repeatClass",
+                 signature=c("RepeatAlignmentItem", "factorOrcharacter"),
+                 function(x, value) {
+    if (is.character(value))
+        value <- factor(value)
+    slot(x, "repeat_class") <- value
+    validObject(x)
+    x
+})

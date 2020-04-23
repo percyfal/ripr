@@ -9,5 +9,5 @@ ap2 <- readRepeatMaskerAlignment(rm.alignment)
 test_that("repeatmasker alignment file returns AlignmentPairs object", {
     expect_equal(length(ap), 8)
     expect_equal(sum(width(query(ap)@sequence)), 0)
-    expect_equal(sum(width(subject(ap)@sequence)), 0)
+    expect_equal(sum(width(sbjct(ap)@sequence)), 0)
 })

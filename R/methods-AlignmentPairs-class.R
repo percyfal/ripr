@@ -28,9 +28,33 @@ setMethod("query", "AlignmentPairs", function(x) mcols(x)$query)
 
 ##'
 ##' @export
-##' @rdname subject
+##' @rdname query
 ##'
-setMethod("subject", "AlignmentPairs", function(x) mcols(x)$subject)
+setReplaceMethod("query",
+                 signature = c("AlignmentPairs", "AlignmentItem"),
+                 function(x, value) {
+    mcols(x)$subject <- value
+    validObject(x)
+    x
+})
+
+##'
+##' @export
+##' @rdname sbjct
+##'
+setMethod("sbjct", "AlignmentPairs", function(x) mcols(x)$subject)
+
+##'
+##' @export
+##' @rdname sbjct
+##'
+setReplaceMethod("sbjct",
+                 signature = c("AlignmentPairs", "RepeatAlignmentItem"),
+                 function(x, value) {
+    mcols(x)$subject <- value
+    validObject(x)
+    x
+})
 
 ##'
 ##' @export
@@ -121,7 +145,6 @@ setMethod("as.data.frame", "AlignmentPairs",
 ##' @export
 ##' @rdname calculateRIP
 ##'
-##'
 ##' @examples
 ##'
 ##' rm.alignment <- system.file("extdata", "repeatmasker_alignment.txt", package="ripr")
@@ -129,21 +152,26 @@ setMethod("as.data.frame", "AlignmentPairs",
 ##' ap <- readRepeatMaskerAlignment(rm.alignment)
 ##' cr <- calculateRIP(ap, genome)
 ##'
-setMethod("calculateRIP", c("AlignmentPairs", "DNAStringSetOrMissing"),
-          function(x, ref = NULL, sequence = FALSE, metadata = FALSE, ...) {
-    if (is.null(ref))
-        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
-              rip.product = RIPProductIndex(x, ...),
-              rip.substrate = RIPSubstrateIndex(x, ...),
-              rip.composite = RIPCompositeIndex(x, ...))
-    else
-        cbind(as.data.frame(x, sequence = sequence, metadata = metadata),
-              rip.product = RIPProductIndex(subseqByRef(x, ref), ...),
-              rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...),
-              rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...))
+setMethod("calculateRIP",
+          signature = c("AlignmentPairs", "DNAStringSetOrMissing"),
+          function(x, ref = NULL, sequence = FALSE,
+                   metadata = FALSE, ...) {
+    if (is.null(ref)) {
+        rip.product = RIPProductIndex(x, ...)
+        rip.substrate = RIPSubstrateIndex(x, ...)
+        rip.composite = RIPCompositeIndex(x, ...)
+    } else {
+        rip.product = RIPProductIndex(subseqByRef(x, ref), ...)
+        rip.substrate = RIPSubstrateIndex(subseqByRef(x, ref), ...)
+        rip.composite = RIPCompositeIndex(subseqByRef(x, ref), ...)
+    }
+    mcols(x)$rip.product <- rip.product
+    mcols(x)$rip.substrate <- rip.substrate
+    mcols(x)$rip.composite <- rip.composite
+    x
 })
 
-##'!
+##'
 ##' @rdname windowScore
 ##' @export
 ##'
@@ -207,4 +235,26 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
         windows <- lambda[[f]](x, ref, windows)
     }
     windows
+})
+
+
+##'
+##' plot
+##'
+##' @description Plot an AlignmentPairs object
+##'
+setMethod("plot", signature=c(x="AlignmentPairs", y="DNAStringSetOrMissing"),
+          function(x, y, ..., size=1, null.which=NULL) {
+    x.df <- as.data.frame(x)
+    if (!missing(y)) {
+        if (!is.null(null.which))
+            null.which <- "shuffle"
+        null.which <- match.arg(null.which, c("shuffle", "frequency"), several.ok=TRUE)
+        ## Need function to sample positions based on alignmentpair
+        nullseq <- lapply(null.which, function(z) {shuffleSeq(y, method=z)})
+        names(nullseq) <- null.which
+
+    }
+    p <- ggplot(x.df, aes(y=rip.composite, x=query.width), ...) + geom_point(size=size) + facet_wrap(. ~ query.seqnames)
+    p
 })
