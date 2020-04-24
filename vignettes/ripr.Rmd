@@ -206,7 +206,11 @@ names(rm.annot.files) <- genome.names
 Genome files are loaded with `Biostrings::readDNAStringSet`
 
 ```{r genome-files}
-genomes <- lapply(genome.files, Biostrings::readDNAStringSet)
+genomes <- lapply(names(genome.files), function(g) {
+    x <- Biostrings::readDNAStringSet(genome.files[[g]])
+    seqinfo(x) <- GenomeInfoDb::Seqinfo(names(x), width(x), genome=g)
+    x
+})
 ```
 
 and annotations files with `readRepeatMaskerAnnotation`. We also add
@@ -282,11 +286,12 @@ To begin with we investigate the effect of repeat width on the RIP
 composite index score. Typically, signatures of RIP (score > 0) are
 visible first at 400bp (REF: rephrase). We plot the RIP composite
 index versus query width and note that ripped sequences indeed are
-longer.
+longer. The option `metadata=TRUE` adds any metadata as additional
+columns to the resulting data frame from the `as.data.frame` call.
 
 ```{r plot-rip, message=FALSE, warning=FALSE}
-rip.df <- do.call("rbind", lapply(rip.ls, as.data.frame, metadata=TRUE))
-ggplot(rip.df, aes(y=rip.composite, x=query.width)) + geom_point(size=1) + ylim(-3, 3) + facet_wrap(. ~ genome)
+ggplot(as.data.frame(rip.ls, metadata=TRUE), aes(y=rip.composite, x=query.width)) +
+    geom_point(size=1) + ylim(-3, 3) + facet_wrap(. ~ genome)
 ```
 
 ## Comparing RIP index to a null distribution
