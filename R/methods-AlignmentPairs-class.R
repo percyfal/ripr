@@ -154,8 +154,7 @@ setMethod("as.data.frame", "AlignmentPairs",
 ##'
 setMethod("calculateRIP",
           signature = c("AlignmentPairs", "DNAStringSetOrMissing"),
-          function(x, ref = NULL, sequence = FALSE,
-                   metadata = FALSE, ...) {
+          function(x, ref = NULL, ...) {
     if (is.null(ref)) {
         rip.product = RIPProductIndex(x, ...)
         rip.substrate = RIPSubstrateIndex(x, ...)
