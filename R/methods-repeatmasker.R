@@ -76,17 +76,17 @@ NULL
     data
 }
 
-.create_query_subject <- function(data) {
-    qinfo <- unique(data.frame(names = as.character(data$query_name),
-                               lengths = data$query_length))
-    sinfo <- unique(data.frame(names = as.character(data$matching_repeat),
-                               lengths = data$subject_length))
-    qinfo$names <- as.character(qinfo$names)
-    sinfo$names <- as.character(sinfo$names)
-    if (any(duplicated(qinfo$names)))
-        qinfo <- qinfo[!duplicated(qinfo$names),]
-    if (any(duplicated(sinfo$names)))
-        sinfo <- sinfo[!duplicated(sinfo$names),]
+.create_query_subject <- function(data, qinfo=NULL) {
+    if (is.null(qinfo)) {
+        message("manually inferring seqinfo for query")
+        qinfo <- unique(data.frame(names = as.character(data$query_name),
+                                   lengths = data$query_length))
+        qinfo$names <- as.character(qinfo$names)
+        if (any(duplicated(qinfo$names)))
+            qinfo <- qinfo[!duplicated(qinfo$names),]
+        qinfo <- Seqinfo(qinfo$names, qinfo$lengths)
+    }
+    stopifnot(inherits(qinfo, "Seqinfo"))
 
     strand <- rep("+", length(data$complement))
     strand[data$complement == "C"] <- "-"
@@ -108,7 +108,7 @@ NULL
         strand = strand,
         bases = data$query_bases,
         sequence = query_seq,
-        seqinfo = Seqinfo(qinfo$names, qinfo$lengths))
+        seqinfo = qinfo)
 
     subject <- RepeatAlignmentItem(
         seqnames = S4Vectors::Rle(data$matching_repeat, rep(1, length(data$matching_repeat))),
@@ -117,27 +117,69 @@ NULL
         strand = strand,
         bases = data$subject_bases,
         sequence = subject_seq,
-        seqinfo = Seqinfo(sinfo$names, sinfo$lengths),
+        seqinfo = NULL,
         repeat_class = data$repeat_class
     )
     list(query = query, subject = subject)
 }
-##' Read repeatmasker annotation output
+##' Read RepeatMasker annotation output
+##'
+##' @description Parse RepeatMasker annotation output. The
+##'     RepeatMasker annotation output is a simple tabular format
+##'     where each line consists of a query-subject pair and
+##'     additional statistics such as score and percentage divergence.
+##'     \code{readRepeatMaskerAnnotation} converts each to an entry in
+##'     an \code{\link[ripr]{AlignmentPairs}} object.
+##'     \code{AlignmentPairs} has slot names \code{score},
+##'     \code{divergence}, \code{deletions} and \code{insertions}
+##'     corresponding to the first four columns in the tabular output,
+##'     and a slot \code{linkage_id} that maps to the last column.
+##'     There are also two slots \code{query} and \code{subject} that
+##'     correspond to the query and subject columns. These slots are
+##'     populated by \code{GenomicRanges::GRanges}-derived objects
+##'     \code{\link[ripr]{AlignmentItem}} and
+##'     \code{\link[ripr]{RepeatAlignmentItem}}.
+##'
+##'     A \code{GenomeInfoDb::Seqinfo} can be passed as an option to
+##'     setup sequence information for the query (genome) sequence.
+##'     Otherwise, sequence information is inferred from the alignment
+##'     coordinates.
+##'
+##'     No attempt is made to infer the sequence information for the
+##'     subject (repeat) for two reasons:
+##'
+##'     1. low-complexity repeats (e.g. polyA-sequences) have no
+##'        well-defined sequence length
+##'
+##'     2. RepeatMasker makes adjustments to alignments which are
+##'        recorded in the annotation output. Therefore the
+##'        coordinates are sometimes modified which can result in
+##'        inferred alignment ranges being longer than the repeat
+##'        sequence itself
+##'
+##'
 ##'
 ##' @param filename File to parse
+##' @param seqinfo Seqinfo object for query (genome) sequence
 ##' @param ... Arguments to pass to data access functions
 ##'
 ##' @export
 ##' @rdname readRepeatMaskerAnnotation
 ##'
-setGeneric("readRepeatMaskerAnnotation", function(filename, ...)
+setGeneric("readRepeatMaskerAnnotation", function(filename, seqinfo=NULL, ...)
     standardGeneric("readRepeatMaskerAnnotation"))
 
 ##'
 ##' @rdname readRepeatMaskerAnnotation
 ##' @export
 ##'
-setMethod("readRepeatMaskerAnnotation", signature = "character", definition = function (filename, ...) {
+##' @examples
+##' fn <- system.file("extdata", "repeatmasker_summary.txt",
+##'                   package="ripr")
+##' ap <- readRepeatMaskerAnnotation(fn)
+##'
+setMethod("readRepeatMaskerAnnotation", signature = c("character"),
+          definition = function (filename, seqinfo=NULL, ...) {
     start_time <- Sys.time()
     con <- file(filename, "r")
     on.exit(close(con))
@@ -149,7 +191,7 @@ setMethod("readRepeatMaskerAnnotation", signature = "character", definition = fu
 
     data <- as.data.frame(do.call(rbind, lapply(lines, .scan_line)))
     data <- .process_header(data)
-    obj <- .create_query_subject(data)
+    obj <- .create_query_subject(data, qinfo=seqinfo)
 
     message("Processed ", length(lines), " lines in ",
             format(Sys.time() - start_time, digits = 2))
