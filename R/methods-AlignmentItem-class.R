@@ -116,28 +116,45 @@ setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
 })
 
 
-##' addNullDistributions
+##' makeNullRIPScores
 ##'
-##' @description calculate RIP null distributions for an AlignmentItem
+##' @description calculate RIP null scores for an AlignmentItem
+##'
+##' Given an AlignmentItem and a reference sequence, calculate RIP
+##' scores on shuffled representations of the input reference
+##' sequence. The reference sequence is scrambled either by permuting
+##' the bases or by generating a mock sequence based on the obseved
+##' nucleotide frequencies.
+##'
+##' Repeat regions are sampled on the mock sequence by randomly
+##' selecting start sites and adding widths based on the observed
+##' widths in the input AlignmentItem.
+##'
+##'
+##' @param x AlignmentItem object
+##' @param ref reference sequence (DNAStringSet)
+##' @param which which method(s) to use to generate null sequences
+##'     ('shuffle' or 'frequency')
 ##'
 ##' @export
-##' @rdname addNullDistributions
+##' @rdname makeNullRIPScores
 ##'
-addNullDistributions <- function(x, ref, which="shuffle") {
+makeNullRIPScores <- function(x, ref, which="shuffle") {
     stopifnot(inherits(x, "AlignmentItem"))
     stopifnot(inherits(ref, "DNAStringSet"))
     which <- match.arg(which, c("shuffle", "frequency"), several.ok=TRUE)
-    names(which) <- which
     nullseq <- lapply(which, function(z) {shuffleSeq(ref, method=z)})
+    names(nullseq) <- which
     ai <- lapply(names(nullseq),
                  function(z) {
         y <- sample(x=x, sequence=nullseq[[z]])
         genome(y) <- z
         calculateRIP(y)})
     names(ai) <- names(nullseq)
-    if (intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
+    if (length(names(mcols(x))) == 0 ||
+        intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
         x <- calculateRIP(x, ref)
-    c(list(obs=x, ai))
+    c(list(obs=x), ai)
 }
 
 
