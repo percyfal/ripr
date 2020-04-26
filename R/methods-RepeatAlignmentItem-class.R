@@ -54,8 +54,6 @@ RepeatAlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
 ##' Convert RepeatAlignmentItem to data.frame.
 ##'
 ##' @param x RepeatAlignmentItem object
-##' @param sequences include sequences column or not
-##' @param metadata include metadata or not
 ##' @param ... additional arguments to as.data.frame
 ##'
 ##' @return data.frame
@@ -63,16 +61,10 @@ RepeatAlignmentItem <- function(seqnames=NULL, ranges=NULL, strand=NULL,
 ##' @export
 ##'
 setMethod("as.data.frame", "RepeatAlignmentItem",
-          function(x, sequences = FALSE, metadata = FALSE, ...) {
+          function(x, ...) {
     mcols_df <- as.data.frame(GRanges(x), ...)
     mcols_df[, "bases"] <- x@bases
     mcols_df[, "repeat_class"] <- x@repeat_class
-    if (sequences)
-        mcols_df[, "sequence"] <- x@sequence
-    if (metadata) {
-        md <- metadata(x)
-        mcols_df[, names(md)] <- md
-    }
     data.frame(mcols_df,
                stringsAsFactors = FALSE)
 })

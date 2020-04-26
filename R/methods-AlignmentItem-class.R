@@ -75,8 +75,6 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 ##' Convert AlignmentItem to data.frame.
 ##'
 ##' @param x AlignmentItem object
-##' @param sequences include sequences column or not
-##' @param metadata include metadata or not
 ##' @param ... additional arguments to as.data.frame
 ##'
 ##' @return data.frame
@@ -86,15 +84,11 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 ##' @export
 ##'
 setMethod("as.data.frame", "AlignmentItem",
-          function(x, sequences = FALSE, metadata = FALSE, ...) {
+          function(x, ...) {
     mcols_df <- as.data.frame(GRanges(x), ...)
     mcols_df[, "bases"] <- x@bases
-    if (sequences)
-        mcols_df[, "sequence"] <- x@sequence
-    if (metadata) {
-        md <- metadata(x)
-        mcols_df[, names(md)] <- md
-    }
+    i <- as.integer(match(seqnames(x), seqnames(seqinfo(x))))
+    mcols_df[, "genome"] <- genome(x)[i]
     data.frame(mcols_df,
                stringsAsFactors = FALSE)
 })

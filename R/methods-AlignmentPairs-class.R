@@ -130,8 +130,6 @@ setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
 ##'
 ##'
 ##' @param x AlignmentPairs object
-##' @param sequences include sequences column or not
-##' @param metadata include metadata or not
 ##' @param ... additional arguments
 ##'
 ##' @return data.frame
@@ -139,16 +137,9 @@ setMethod("subseqByRef", c("AlignmentPairs", "DNAStringSet"),
 ##' @export
 ##'
 setMethod("as.data.frame", "AlignmentPairs",
-          function(x, sequences = FALSE, metadata = FALSE, ...) {
+          function(x, ...) {
     mcols_df <- as.data.frame(mcols(x), ...)
     cnames <- colnames(mcols_df)
-    if (!sequences)
-        cnames <- cnames[!grepl("sequence", cnames)]
-    if (metadata) {
-        md <- metadata(x)
-        mcols_df[, names(md)] <- md
-        cnames <- c(cnames, names(md))
-    }
     data.frame(mcols_df[, cnames],
                stringsAsFactors = FALSE)
 })
