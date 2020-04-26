@@ -122,6 +122,31 @@ setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
 })
 
 
+##' addNullDistributions
+##'
+##' @description calculate RIP null distributions for an AlignmentItem
+##'
+##' @export
+##' @rdname addNullDistributions
+##'
+addNullDistributions <- function(x, ref, which="shuffle") {
+    stopifnot(inherits(x, "AlignmentItem"))
+    stopifnot(inherits(ref, "DNAStringSet"))
+    which <- match.arg(which, c("shuffle", "frequency"), several.ok=TRUE)
+    names(which) <- which
+    nullseq <- lapply(which, function(z) {shuffleSeq(ref, method=z)})
+    ai <- lapply(names(nullseq),
+                 function(z) {
+        y <- sample(x=x, sequence=nullseq[[z]])
+        genome(y) <- z
+        calculateRIP(y)})
+    names(ai) <- names(nullseq)
+    if (intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
+        x <- calculateRIP(x, ref)
+    c(list(obs=x, ai)
+}
+
+
 
 ##' sample
 ##'
