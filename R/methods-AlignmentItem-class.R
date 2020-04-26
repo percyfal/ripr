@@ -137,7 +137,7 @@ addNullDistributions <- function(x, ref, which="shuffle") {
     names(ai) <- names(nullseq)
     if (intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
         x <- calculateRIP(x, ref)
-    c(list(obs=x, ai)
+    c(list(obs=x, ai))
 }
 
 
