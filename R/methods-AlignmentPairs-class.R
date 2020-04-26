@@ -98,6 +98,18 @@ setMethod("count", "AlignmentPairs",
     count(mcols(x)[[which]], width, step, exclude, ...)
 })
 
+
+##'
+##' @importFrom GenomeInfoDb genome
+##'
+##' @export
+##'
+setMethod("genome", "AlignmentPairs",
+          function(x) {
+    genome(query(x))
+})
+
+
 ##'
 ##' @param which which AlignmentItem to operate on
 ##'
@@ -237,23 +249,40 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
 })
 
 
-##'
+
+##' @importFrom ggplot2 autoplot ggplot geom_point
+autoplot.AlignmentPairs <- function(object, aes, reference=NULL,
+                                    null.which=NULL, ...) {
+    x.df <- as.data.frame(object)
+    p <- ggplot(x.df, {{ aes }}) + geom_point(...)
+    if (!missing(reference)) {
+        null.which <- match.arg(null.which, c("shuffle", "frequency"))
+        names(null.which) <- null.which
+        nullseq <- lapply(null.which, function(z) {shuffleSeq(reference, method=z)})
+    }
+    nullseq
+
+}
+
 ##' plot
 ##'
-##' @description Plot an AlignmentPairs object
+##' @description plot an AlignmentPairs object
 ##'
-setMethod("plot", signature=c(x="AlignmentPairs", y="DNAStringSetOrMissing"),
-          function(x, y, ..., size=1, null.which=NULL) {
-    x.df <- as.data.frame(x)
-    if (!missing(y)) {
-        if (!is.null(null.which))
-            null.which <- "shuffle"
-        null.which <- match.arg(null.which, c("shuffle", "frequency"), several.ok=TRUE)
-        ## Need function to sample positions based on alignmentpair
-        nullseq <- lapply(null.which, function(z) {shuffleSeq(y, method=z)})
-        names(nullseq) <- null.which
+##' @export
+##' @importFrom graphics plot
+##'
+plot.AlignmentPairs <- function(x, ...) {
+    print(autoplot(x, ...))
+}
 
-    }
-    p <- ggplot(x.df, aes(y=rip.composite, x=query.width), ...) + geom_point(size=size) + facet_wrap(. ~ query.seqnames)
-    p
+
+
+##'
+##' @importFrom GenomeInfoDb genome
+##'
+##' @export
+##'
+setMethod("genome", "AlignmentItem",
+          function(x) {
+    genome(seqinfo(x))
 })

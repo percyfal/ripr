@@ -149,3 +149,14 @@ sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL, ...) {
                   seqname=seqnames(x)[i],
                   sequence=DNAStringSet(lapply(i, function(j) {subseq(sequence, start=start[j], end=end[j])})))
 }
+
+
+##'
+##' @importFrom GenomeInfoDb genome
+##'
+##' @export
+##'
+setMethod("genome", "AlignmentItem",
+          function(x) {
+    genome(seqinfo(x))
+})
