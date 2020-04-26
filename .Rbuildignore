@@ -1,3 +1,5 @@
 ^LICENSE\.md$
 .envrc
 environment.yml
+^doc$
+^Meta$

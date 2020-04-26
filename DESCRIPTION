@@ -1,12 +1,12 @@
 Package: ripr
-Title: RIP composite analysis
+Title: Repeat Induced Point mutations in R
 Version: 0.0.0.9000
 Authors@R:
     person(given = "Per",
 	   family = "Unneberg",
 	   role = c("aut", "cre"),
 	   email = "per.unneberg@scilifelab.se")
-Description: Tools for calculating RIP indices.
+Description: Tools for calculating RIP and plotting indices.
 Depends:
     R (>= 3.4)
 License: MIT + file LICENSE
@@ -28,4 +28,4 @@ Suggests:
 	testthat
 VignetteBuilder:
 	knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
