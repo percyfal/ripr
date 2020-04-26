@@ -106,7 +106,7 @@ setMethod("as.data.frame", "AlignmentItem",
 ##'
 setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
           function(x, ref = NULL, ...) {
-    if (missing(ref)) {
+    if (is.null(ref)) {
         rip.product = RIPProductIndex(x, ...)
         rip.substrate = RIPSubstrateIndex(x, ...)
         rip.composite = RIPCompositeIndex(x, ...)

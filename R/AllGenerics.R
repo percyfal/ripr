@@ -244,7 +244,7 @@ setGeneric("AlignmentPairsList", signature = c("obj"),
 ##' @rdname calculateRIP
 ##'
 setGeneric("calculateRIP", signature = c("x", "ref"),
-           function(x, ref, ...)
+           function(x, ref=NULL, ...)
     standardGeneric("calculateRIP"))
 
 
