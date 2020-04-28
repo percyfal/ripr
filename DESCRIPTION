@@ -21,6 +21,7 @@ Imports:
 	S4Vectors,
 	ggplot2,
 	methods,
+	dplyr,
 	tidyr,
 	tidyselect
 Suggests:
