@@ -180,7 +180,8 @@ sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL, ...) {
     start <- sample(length(sequence), n)
     end <- start + w
     i <- which(end <= length(sequence))
-    message("Dropping ", sum(end>length(sequence)), " ranges that extended beyond sequence end")
+    if (sum(end>length(sequence)) > 0)
+        warning("Dropping ", sum(end>length(sequence)), " ranges that extended beyond sequence end")
     AlignmentItem(ranges=IRanges(start=start[i], end=end[i]),
                   seqname=seqnames(x)[i],
                   sequence=DNAStringSet(lapply(i, function(j) {subseq(sequence, start=start[j], end=end[j])})))

@@ -84,7 +84,7 @@ NULL
         qinfo$names <- as.character(qinfo$names)
         if (any(duplicated(qinfo$names)))
             qinfo <- qinfo[!duplicated(qinfo$names),]
-        qinfo <- Seqinfo(qinfo$names, qinfo$lengths)
+        qinfo <- GenomeInfoDb::Seqinfo(qinfo$names, qinfo$lengths)
     }
     stopifnot(inherits(qinfo, "Seqinfo"))
 

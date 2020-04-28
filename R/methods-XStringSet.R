@@ -27,7 +27,8 @@ setMethod("count", "XStringSet",
 ##'
 setMethod("slidingWindows", "DNAStringSet", function(x, width, step = 1L) {
     ## Convert DNAStringSet to GRanges based on seqinfo
-    y <- GRanges(seqnames = seqinfo(x)@seqnames, ranges = IRanges(start = 1, end = seqinfo(x)@seqlengths))
+    y <- GRanges(seqnames = seqinfo(x)@seqnames,
+                 ranges = IRanges(start = 1, end = seqinfo(x)@seqlengths))
     IRanges::slidingWindows(y, width = width, step = step)
 })
 

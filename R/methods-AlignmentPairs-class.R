@@ -201,8 +201,7 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
     }
     if ("rip" %in% which) {
         message("Calculating rip scores")
-        arglist <- list(x = AlignmentItem(windows), ref = ref, sequence = FALSE,
-                        metadata = FALSE)
+        arglist <- list(x = AlignmentItem(windows), ref = ref)
         arglist <- append(arglist, dots[which(names(dots) %in% names(formals(count)))])
         .rip <- do.call(calculateRIP, arglist)
         windows$rip.product <- .rip$rip.product

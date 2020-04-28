@@ -67,6 +67,7 @@ autoplot.AlignmentPairsList <- function(object, aes, vars, ..., which="point") {
 ##'
 ##' @export
 ##' @importFrom graphics plot
+##'
 plot.AlignmentPairsList <- function(x, ...) {
     print(autoplot(x, ...))
 }
