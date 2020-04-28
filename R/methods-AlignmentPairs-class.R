@@ -264,15 +264,3 @@ autoplot.AlignmentPairs <- function(object, aes, reference=NULL,
 plot.AlignmentPairs <- function(x, ...) {
     print(autoplot(x, ...))
 }
-
-
-
-##'
-##' @importFrom GenomeInfoDb genome
-##'
-##' @export
-##'
-setMethod("genome", "AlignmentItem",
-          function(x) {
-    genome(seqinfo(x))
-})
