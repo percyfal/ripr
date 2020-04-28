@@ -224,7 +224,24 @@ setGeneric("AlignmentPairsList", signature = c("obj"),
     standardGeneric("AlignmentPairsList"))
 
 
-## FIXME: remove sequence parameter alltogether?
+
+##' @section Constructor:
+##'
+##' \code{AlignmentItemList(obj, ...)}: Constructs an
+##' AlignmentItemList object from the input
+##'
+##' @param obj list
+##' @param ... ellipsis
+##'
+##' @export
+##' @rdname AlignmentItemList-class
+##'
+##' @return AlignmentItemList object
+##'
+setGeneric("AlignmentItemList", signature = c("obj"),
+           function(obj, ...)
+    standardGeneric("AlignmentItemList"))
+
 
 ##' calculateRIP
 ##'

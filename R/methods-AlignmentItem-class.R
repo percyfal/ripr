@@ -154,7 +154,7 @@ makeNullRIPScores <- function(x, ref, which="shuffle") {
     if (length(names(mcols(x))) == 0 ||
         intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
         x <- calculateRIP(x, ref)
-    c(list(obs=x), ai)
+    AlignmentItemList(c(list(obs=x), ai))
 }
 
 

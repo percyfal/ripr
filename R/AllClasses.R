@@ -140,3 +140,18 @@ setClass("AlignmentPairsList",
          contains = "SimpleList",
          prototype = prototype(elementType = "AlignmentPairs")
          )
+
+##' List of AlignmentItem instances
+##'
+##' @description Subclass of S4Vectors SimpleList, where each entry is
+##'     an AlignmentItem object
+##'
+##' @export
+##' @rdname AlignmentItem-class
+##'
+##' @import S4Vectors
+##'
+setClass("AlignmentItemList",
+         contains = "SimpleList",
+         prototype = prototype(elementType = "AlignmentItem")
+         )
