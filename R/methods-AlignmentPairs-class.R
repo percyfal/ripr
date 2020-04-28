@@ -177,16 +177,14 @@ setMethod("calculateRIP",
 ##' @rdname windowScore
 ##' @export
 ##'
-##' @param metadata.which character: add metadata as columns to final
-##'     output
 ##' @param lambda list of functions that can be applied to the tuple
 ##'     x, ref, and the generated windows
 ##'
+##'
 setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
           function(x, ref, window.size = 10000L, window.step = NULL,
-                   which = c("rip", "repeat.content", "gc"), metadata.which = NULL,
-                   lambda = list(),
-                   ...) {
+                   which = c("rip", "repeat.content", "gc"), ...,
+                   lambda = list()) {
     dots <- list(...)
     which <- match.arg(which, c("rip", "repeat.content", "gc.content"), several.ok = TRUE)
     if (is.null(window.step)) window.step <- window.size
@@ -195,10 +193,6 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
     windows$window.size <- window.size
     windows$window.step <- window.step
     seqinfo(windows) <- seqinfo(ref)
-    if (!is.null(metadata)) {
-        metadata.which <- match.arg(metadata.which, names(metadata(x)), several.ok = TRUE)
-        for (md in metadata.which) {mcols(windows)[[md]] <- metadata(x)[[md]]}
-    }
     if ("rip" %in% which) {
         message("Calculating rip scores")
         arglist <- list(x = AlignmentItem(windows), ref = ref)
@@ -237,30 +231,3 @@ setMethod("windowScore", c("AlignmentPairs", "DNAStringSet"),
     }
     windows
 })
-
-
-
-##' @importFrom ggplot2 autoplot ggplot geom_point
-autoplot.AlignmentPairs <- function(object, aes, reference=NULL,
-                                    null.which=NULL, ...) {
-    x.df <- as.data.frame(object)
-    p <- ggplot(x.df, {{ aes }}) + geom_point(...)
-    if (!missing(reference)) {
-        null.which <- match.arg(null.which, c("shuffle", "frequency"))
-        names(null.which) <- null.which
-        nullseq <- lapply(null.which, function(z) {shuffleSeq(reference, method=z)})
-    }
-    nullseq
-
-}
-
-##' plot
-##'
-##' @description plot an AlignmentPairs object
-##'
-##' @export
-##' @importFrom graphics plot
-##'
-plot.AlignmentPairs <- function(x, ...) {
-    print(autoplot(x, ...))
-}
