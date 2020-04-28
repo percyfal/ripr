@@ -32,7 +32,8 @@ setMethod("as.data.frame", signature = "AlignmentPairsList",
 
 ##' autoplot.AlignmentPairsList
 ##'
-##' @importFrom ggplot2 autoplot ggplot geom_point geom_boxplot geom_violin geom_density
+##' @importFrom ggplot2 autoplot ggplot geom_point geom_boxplot
+##'     geom_violin geom_density facet_wrap
 ##'
 ##' @param object AlignmentPairsList
 ##' @param aes aes mapping
@@ -64,6 +65,9 @@ autoplot.AlignmentPairsList <- function(object, aes, vars, ..., which="point") {
 ##' plot
 ##'
 ##' @description plot an AlignmentPairsList
+##'
+##' @param x object to plot
+##' @param ... additional arguments for autoplot
 ##'
 ##' @export
 ##' @importFrom graphics plot

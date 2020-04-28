@@ -136,6 +136,8 @@ setMethod("calculateRIP", c("AlignmentItem", "DNAStringSetOrMissing"),
 ##' @param which which method(s) to use to generate null sequences
 ##'     ('shuffle' or 'frequency')
 ##'
+##' @importFrom GenomeInfoDb genome<-
+##'
 ##' @export
 ##' @rdname makeNullRIPScores
 ##'
@@ -148,7 +150,7 @@ makeNullRIPScores <- function(x, ref, which="shuffle") {
     ai <- lapply(names(nullseq),
                  function(z) {
         y <- sample(x=x, sequence=nullseq[[z]])
-        genome(y) <- z
+        GenomeInfoDb::genome(y) <- z
         calculateRIP(y)})
     names(ai) <- names(nullseq)
     if (length(names(mcols(x))) == 0 ||
@@ -163,13 +165,21 @@ makeNullRIPScores <- function(x, ref, which="shuffle") {
 ##'
 ##' @description randomly sample positions on a sequence based on ranges
 ##'
+##'
+##' @param x AlignmentItem object to sample ranges from
+##' @param size sample size
+##' @param replace do sampling with replacement
+##' @param prob provide weights for probability sampler
+##' @param sequence DNAStringSet object representing the sequence on
+##'     which sampling is performed
+##'
 ##' @export
 ##' @rdname sample
 ##'
 ##' @importFrom IRanges ranges
 ##' @importFrom Biostrings DNAStringSet
 ##'
-sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL, ...) {
+sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL) {
     if (is.null(sequence))
         return(base::sample(x, size, replace=replace, prob=prob))
     stopifnot(inherits(x, "AlignmentItem"))
@@ -183,7 +193,7 @@ sample <- function(x, size, replace=FALSE, prob=NULL, sequence=NULL, ...) {
     if (sum(end>length(sequence)) > 0)
         warning("Dropping ", sum(end>length(sequence)), " ranges that extended beyond sequence end")
     AlignmentItem(ranges=IRanges(start=start[i], end=end[i]),
-                  seqname=seqnames(x)[i],
+                  seqnames=seqnames(x)[i],
                   sequence=DNAStringSet(lapply(i, function(j) {subseq(sequence, start=start[j], end=end[j])})))
 }
 

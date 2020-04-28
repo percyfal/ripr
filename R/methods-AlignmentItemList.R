@@ -32,8 +32,6 @@ setMethod("as.data.frame", signature = "AlignmentItemList",
 
 ##' autoplot.AlignmentItemList
 ##'
-##' @importFrom ggplot2 autoplot ggplot geom_point geom_boxplot geom_violin geom_density
-##'
 ##' @param object AlignmentItemList
 ##' @param aes aes mapping
 ##' @param vars variable mapping to facet plots
@@ -42,6 +40,13 @@ setMethod("as.data.frame", signature = "AlignmentItemList",
 ##'     plot with marginal densities
 ##' @param xlim set x limits
 ##' @param ylim set y limits
+##'
+##'
+##' @importFrom ggplot2 autoplot ggplot geom_point geom_boxplot
+##'     geom_violin geom_density scale_color_viridis_d
+##'     scale_fill_viridis_d quo_name facet_wrap element_blank
+##'     coord_flip theme scale_y_reverse
+##'
 ##'
 ##' @export
 ##'
@@ -91,8 +96,8 @@ autoplot.AlignmentItemList <- function(object, aes, vars, ..., which="point", xl
                   axis.title.x = element_blank(),
                   axis.title.y = element_blank())
 
-        p <- plot_grid(p.y + theme(panel.border = element_blank()),
-                       p.scatter, ncol=2, align="hv", rel_widths=c(1, 4))
+        p <- cowplot::plot_grid(p.y + theme(panel.border = element_blank()),
+                                p.scatter, ncol=2, align="hv", rel_widths=c(1, 4))
     }
     if (!missing(vars))
         p <- p + facet_wrap( {{ vars }} )
@@ -104,9 +109,11 @@ autoplot.AlignmentItemList <- function(object, aes, vars, ..., which="point", xl
 ##'
 ##' @description plot an AlignmentItemList
 ##'
+##' @param x object to plot
+##' @param ... additional parameters for autoplot
+##'
 ##' @export
 ##' @importFrom graphics plot
-##'
 plot.AlignmentItemList <- function(x, ...) {
     print(autoplot(x, ...))
 }

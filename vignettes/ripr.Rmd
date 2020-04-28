@@ -22,11 +22,11 @@ output.
 
 ## R setup
 
-```{r knitr-setup, echo=FALSE}
+```{r knitr-setup, echo=FALSE, cache=FALSE}
 library(knitr)
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE,
                       fig.width=8, fig.height=6, autodep=TRUE,
-                      cache=TRUE, include=TRUE, eval=TRUE, tidy=FALSE,
+                      cache=FALSE, include=TRUE, eval=TRUE, tidy=FALSE,
                       cache.extra=packageVersion('tufte'), dev=c('png'))
 knitr::knit_hooks$set(inline = function(x) {
   prettyNum(x, big.mark=" ")
@@ -34,11 +34,23 @@ knitr::knit_hooks$set(inline = function(x) {
 ```
 
 
-```{r r-setup}
+```{r r-setup, cache=FALSE}
 library(ripr)
 library(ggplot2)
-library(viridis)
 library(plyr)
+library(dplyr)
+library(cowplot)
+library(Biostrings)
+library(GenomeInfoDb)
+library(GenomicRanges)
+```
+
+```{r ggplot-theme, cache=FALSE}
+library(viridis)
+library(RColorBrewer)
+bw <- theme_bw(base_size=18) %+replace% theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+theme_set(bw)
+color.pal.4 <- brewer.pal(name = "Paired", n = 4)
 ```
 
 ## On object representation of RepeatMasker output
@@ -160,19 +172,19 @@ files are **not** equivalent, as the RepeatMasker documentation
 clearly states [@repeatmasker_docs, section Discrepancies between
 alignments and annotation]:
 
-	Most discrepancies between alignments and annotation result from
-	adjustments made to produce more legible annotation. This annotation
-	also tends to be closer to the biological reality than the raw
-	cross_match output. For example, adjustments often are necessary when
-	a repeat is fragmented through deletions, insertions, or an inversion.
-	Many subfamilies of repeats closely resemble each other, and when a
-	repeat is fragmented these fragments can be assigned different
-	subfamily names in the raw output. The program often can decide if
-	fragments are derived from the same integrated transposable element
-	and which subfamily name is appropriate (subsequently given to all
-	fragments). This can result in discrepancies in the repeat name and
-	matching positions in the consensus sequence (subfamily consensus
-	sequences differ in length).
+    Most discrepancies between alignments and annotation result from
+    adjustments made to produce more legible annotation. This annotation
+    also tends to be closer to the biological reality than the raw
+    cross_match output. For example, adjustments often are necessary when
+    a repeat is fragmented through deletions, insertions, or an inversion.
+    Many subfamilies of repeats closely resemble each other, and when a
+    repeat is fragmented these fragments can be assigned different
+    subfamily names in the raw output. The program often can decide if
+    fragments are derived from the same integrated transposable element
+    and which subfamily name is appropriate (subsequently given to all
+    fragments). This can result in discrepancies in the repeat name and
+    matching positions in the consensus sequence (subfamily consensus
+    sequences differ in length).
 
 The analyses described in this vignette are all based on the
 annotation files, and no further mention will be made of the alignment
@@ -195,22 +207,26 @@ We define genome and annotation files for loading:
 
 ```{r loading-data}
 genome.names <- c("5940pb_lg2", "9046pb_lg2", "crassa_lg2")
-genome.files <- system.file("extdata", paste0(genome.names, ".fasta"),
-							package="ripr")
+genome.files <- system.file(
+    file.path("extdata", paste0(genome.names, ".fasta")), package="ripr")
 names(genome.files) <- genome.names
-rm.annot.files <- system.file("extdata", paste0(genome.names, ".fasta.out"),
-							  package="ripr")
+rm.annot.files <- system.file(
+    file.path("extdata", paste0(genome.names, ".fasta.out")), package="ripr")
 names(rm.annot.files) <- genome.names
 ```
 
 Genome files are loaded with `Biostrings::readDNAStringSet`
 
 ```{r genome-files}
-genomes <- lapply(names(genome.files), function(g) {
+genomes <- lapply(genome.names, function(g) {
+    message("Reading genome ", g)
     x <- Biostrings::readDNAStringSet(genome.files[[g]])
-    seqinfo(x) <- GenomeInfoDb::Seqinfo(names(x), width(x), genome=g)
+    seqinfo(x) <- GenomeInfoDb::Seqinfo(seqnames = names(x),
+                                        seqlengths = width(x),
+                                        genome = g)
     x
 })
+names(genomes) <- genome.names
 ```
 
 and annotations files with `readRepeatMaskerAnnotation`. We also add
@@ -219,13 +235,10 @@ the genome name as a metadata attribute for later access.
 
 ```{r load-annotation-files, message=FALSE, warning=FALSE}
 rm.annot.ap <- AlignmentPairsList(
-    lapply(names(rm.annot.files), function(x) {
-        ap <- readRepeatMaskerAnnotation(rm.annot.files[[x]])
-        metadata(ap)$genome <- x
-        ap
+    lapply(genome.names, function(g) {
+        readRepeatMaskerAnnotation(rm.annot.files[[g]], seqinfo(genomes[[g]]))
     }))
-names(rm.annot.ap) <- names(rm.annot.files)
-rm.annot.ap
+names(rm.annot.ap) <- genome.names
 ```
 
 The loading of files was wrapped in a call to `AlignmentPairsList`
@@ -248,7 +261,7 @@ We simplify the names and rename levels with `plyr::mapvalues`.
 repeats.new <- unlist(lapply(strsplit(repeats, "/"), function(x) {gsub("\\?$", "", x[[1]])}))
 rm.annot.ap <- endoapply(rm.annot.ap, function(x) {
     sbj <- sbjct(x)
-    repeatClass(sbj) <- mapvalues(repeatClass(sbj), from=repeats, to=repeats.new)
+    repeatClass(sbj) <- plyr::mapvalues(repeatClass(sbj), from=repeats, to=repeats.new)
     sbjct(x) <- sbj
     x
 })
@@ -275,9 +288,11 @@ object. Since we loaded the genomes before, we can proceed to
 calculate the RIP scores:
 
 ```{r calculate-rip}
-rip.ls <- endoapply(rm.annot.ap, function(x){
-    calculateRIP(x, genomes[[metadata(x)$genome]])
-})
+rip.ls <- AlignmentPairsList(
+    lapply(genome.names, function(g){
+        calculateRIP(rm.annot.ap[[g]], genomes[[g]])
+    }))
+names(rip.ls) <- genome.names
 ```
 
 ## RIP index as a function of repeat width
@@ -286,19 +301,82 @@ To begin with we investigate the effect of repeat width on the RIP
 composite index score. Typically, signatures of RIP (score > 0) are
 visible first at 400bp (REF: rephrase). We plot the RIP composite
 index versus query width and note that ripped sequences indeed are
-longer. The option `metadata=TRUE` adds any metadata as additional
-columns to the resulting data frame from the `as.data.frame` call.
+longer.
 
 ```{r plot-rip, message=FALSE, warning=FALSE}
-ggplot(as.data.frame(rip.ls, metadata=TRUE), aes(y=rip.composite, x=query.width)) +
-    geom_point(size=1) + ylim(-3, 3) + facet_wrap(. ~ genome)
+autoplot(rip.ls, aes(query.width, rip.composite), vars(id), size=1) + ylim(-3, 3)
 ```
 
-## Comparing RIP index to a null distribution
+## Comparing RIP index to a null scores
 
 Even though there seem to be a large number of repeats that are
-ripped, we would like to compare
+ripped, we would like to compare the observed scores to that which we
+would see in a random background. The function `makeNullRIPScores`
+generates mock `AlignmentItem` objects on a shuffled reference
+sequence:
+
+
+```{r calc-null-scores}
+null.dist <- lapply(genome.names, function(g) {
+    makeNullRIPScores(query(rip.ls[[g]]), genomes[[g]], which=c("shuffle", "frequency"))})
+names(null.dist) <- genome.names
+```
+
+We can then use the `autoplot` function to plot the observed RIP
+scores together with the null distributions, either as scatter plots
+
+
+```{r plot-null-distributions-scatter, fig.cap="RIP composite score (y-axis) as function of repeat width (x-axis)"}
+p <- lapply(genome.names, function(g) {
+    autoplot(null.dist[[g]], aes(width, rip.composite, colour=genome), size=1, alpha=.5, ylim=c(-3, 3)) + xlab(NULL) + ylab(NULL) + theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 1))
+})
+cowplot::plot_grid(plotlist=p, ncol=1, labels=genome.names, vjust=1, hjust=-1, label_fontface="italic")
+```
+
+or densities
+
+```{r plot-null-densities, fig.cap="RIP composite score density"}
+p <- lapply(genome.names, function(g) {
+    autoplot(null.dist[[g]],
+             aes(rip.composite, fill=id), size=1, alpha=.5,
+             which="density", xlim=c(-3, 3)) +
+        xlab(NULL) + ylab(NULL)
+})
+cowplot::plot_grid(plotlist=p, ncol=1, labels=genome.names, vjust=1, hjust=-1, label_fontface="italic")
+```
+
+or both.
+
+```{r plot-null-distributions-combo, fig.cap="left panel: RIP composite score density and right panel: RIP composite score (y-axis) as function of repeat width (x-axis)"}
+p <- lapply(genome.names, function(g) {
+    autoplot(null.dist[[g]],
+             aes(width, rip.composite, colour=id, fill=id),
+             size=1, alpha=.5, which="grid", xlim=c(-3, 3),
+             ylim=c(-3, 3))
+})
+cowplot::plot_grid(plotlist=p, ncol=1, labels=genome.names, vjust=2.5, hjust=-1, label_fontface="italic")
+```
 
 # Window-based analyses
+
+In addition to genome-wide analyses, `ripr` provides functions for
+analyzing RIP scores, repeat content, and GC content in windows.
+
+```{r calc-window-score}
+gr.list <- GRangesList(lapply(genome.names, function(g) {
+    windowScore(rm.annot.ap[[g]], genomes[[g]], 10000)
+}))
+names(gr.list) <- genome.names
+```
+The results can be plotted with `autoplot` functions, either each `GRanges` separately
+
+```{r plot-windows-gr, fig.cap="RIP composite score plotted along window index."}
+cowplot::plot_grid(plotlist = lapply(gr.list, autoplot, aes(window, rip.composite)), ncol=1, labels=genome.names)
+```
+
+```{r plot-windows-grlist, fig.cap="RIP composite score plotted along window index."}
+autoplot(gr.list, aes(window, rip.composite), .id="genome") + facet_wrap(. ~ genome, strip.position="left", ncol=1)
+```
+
 
 # References

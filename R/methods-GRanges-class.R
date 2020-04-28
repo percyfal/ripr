@@ -7,9 +7,11 @@ setMethod("subseqByRef", c("GRanges", "DNAStringSet"),
 })
 
 
-##' @importFrom ggplot2 ggplot geom_point
+##' @importFrom ggplot2 ggplot geom_point facet_wrap theme
+##'     element_blank element_text unit
 .windowPlot <- function(data, aes, vars,
                         ...) {
+    stopifnot(("window" %in% colnames(data)))
     if (is.factor(data$window.size))
         data$window.size <- as.numeric(as.character(data$window.size))
     data <- droplevels(data)
@@ -24,14 +26,17 @@ setMethod("subseqByRef", c("GRanges", "DNAStringSet"),
 
 ##' autoplot.GRanges
 ##'
+##' @param object GRanges object
+##' @param aes aesthetic mapping
+##' @param vars faceting variables
+##' @param ... additional parameters to geom_point
 ##'
 ##' @importFrom ggplot2 autoplot
-##'
+##' @importFrom GenomicRanges GRanges
 ##' @export
 ##'
 autoplot.GRanges <- function(object, aes, vars,
                              ...) {
-    stopifnot(("window" %in% names(mcols(object))))
     data <- as.data.frame(object)
     p <- .windowPlot(data, aes, vars, ...)
     p
@@ -44,8 +49,12 @@ autoplot.GRanges <- function(object, aes, vars,
 ##' By assumption the GRanges is a representation of a windowed
 ##' analysis as obtained by \code{\link[ripr]{windowScore}}.
 ##'
+##' @param x object to plot
+##' @param ... parameters for autoplot function
+##'
 ##' @export
 ##' @importFrom graphics plot
+##' @importFrom GenomicRanges GRanges
 ##'
 plot.GRanges <- function(x, ...) {
     print(autoplot(x, ...))
@@ -54,8 +63,16 @@ plot.GRanges <- function(x, ...) {
 
 ##' autoplot.GRangesList
 ##'
-##' @importFrom ggplot autoplot
+##' @param object GRanges object
+##' @param aes aesthetic mapping
+##' @param vars faceting variables
+##' @param ... additional parameters to geom_point
+##' @param .id column name for bind_rows. If the input is a named
+##'     GRangesList, the names will be added as an additional column
+##'
+##' @importFrom ggplot2 autoplot
 ##' @importFrom dplyr bind_rows
+##' @importFrom GenomicRanges GRangesList
 ##'
 ##' @export
 ##'
@@ -74,10 +91,13 @@ autoplot.GRangesList <- function(object, aes, vars,
 ##' representations of windowed analyses as obtained by
 ##' \code{\link[ripr]{windowScore}}.
 ##'
+##' @param x object to plot
+##' @param ... parameters for autoplot function
+##'
 ##' @export
 ##' @importFrom graphics plot
+##' @importFrom GenomicRanges GRangesList
 ##'
 plot.GRangesList <- function(x, ...) {
     print(autoplot(x, ...))
 }
-
