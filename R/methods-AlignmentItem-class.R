@@ -153,8 +153,8 @@ makeNullRIPScores <- function(x, ref, which="shuffle") {
         GenomeInfoDb::genome(y) <- z
         calculateRIP(y)})
     names(ai) <- names(nullseq)
-    if (length(names(mcols(x))) == 0 ||
-        intersect(c("rip.composite", "rip.product", "rip.substrate"), names(mcols(x))) == character(0))
+    cols <- c("rip.composite", "rip.product", "rip.substrate")
+    if (length(names(mcols(x))) == 0 || identical(intersect(cols, names(mcols(x))), character(0)))
         x <- calculateRIP(x, ref)
     AlignmentItemList(c(list(obs=x), ai))
 }
