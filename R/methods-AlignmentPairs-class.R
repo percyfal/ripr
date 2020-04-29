@@ -33,7 +33,7 @@ setMethod("query", "AlignmentPairs", function(x) mcols(x)$query)
 setReplaceMethod("query",
                  signature = c("AlignmentPairs", "AlignmentItem"),
                  function(x, value) {
-    mcols(x)$subject <- value
+    mcols(x)$query <- value
     validObject(x)
     x
 })
