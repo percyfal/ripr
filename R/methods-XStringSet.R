@@ -80,3 +80,42 @@ setMethod("shuffleSeq", "DNAStringSet",
     }
     sequence
 })
+
+
+##' Make windows from reference sequence
+##'
+##' @description Make windows from reference sequence
+##'
+##' @param obj input sequence
+##' @param ... additional parameters
+##'
+##' @return GRanges
+##'
+##' @export
+##' @rdname makeWindows
+##'
+makeWindows <- function(obj, ...) UseMethod("makeWindows", obj)
+
+##' makeWindows.DNAStringSet
+##'
+##' @description Make windows from DNAStringSet
+##'
+##' @param window.size window size
+##' @param window.step window step
+##'
+##' @export
+##' @rdname makeWindows
+##'
+##' @importFrom IRanges slidingWindows
+##'
+##' @return GRanges
+##'
+makeWindows.DNAStringSet <- function(obj, window.size = 10000L, window.step = NULL) {
+    if (is.null(window.step)) window.step <- window.size
+    windows <- unlist(slidingWindows(obj, width = window.size, step = window.step))
+    windows$window <- unlist(seq_along(seqnames(windows)))
+    windows$window.size <- window.size
+    windows$window.step <- window.step
+    seqinfo(windows) <- seqinfo(obj)
+    windows
+}

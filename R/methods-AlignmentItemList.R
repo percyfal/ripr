@@ -25,7 +25,10 @@ setMethod("AlignmentItemList", "list",
 ##'
 setMethod("as.data.frame", signature = "AlignmentItemList",
           function(x, ..., .id="id") {
-    dplyr::bind_rows(lapply(x, as.data.frame, ...), .id=.id)
+    data <- dplyr::bind_rows(lapply(x, as.data.frame, ...), .id=.id)
+    ## Ensure factor order is preserved
+    data[[.id]] <- factor(data[[.id]], levels=unique(data[[.id]]))
+    data
 })
 
 

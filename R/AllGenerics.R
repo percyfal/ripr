@@ -273,11 +273,11 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 ##'     different scores. Scores include RIP, repeat content, and GC
 ##'     content.
 ##'
+##' @param windows ranges containing information on the windows on
+##'     which to operate
 ##' @param x An AlignmentPairs object
 ##' @param ref A DNAStringSet object corresponding to the subject
 ##'     reference
-##' @param window.size window size
-##' @param window.step window step size
 ##' @param which which score to calculate; any of rip, repeat.content,
 ##'     and gc
 ##' @param ... additional parameters
@@ -288,7 +288,56 @@ setGeneric("calculateRIP", signature = c("x", "ref"),
 ##' @export
 ##' @rdname windowScore
 ##'
-setGeneric("windowScore", signature = c("x", "ref"),
-           function(x, ref, window.size = 10000L, window.step = NULL,
+setGeneric("windowScore", signature = c("windows", "x", "ref"),
+           function(windows, x, ref,
                     which = c("rip", "repeat.content", "gc"), ...)
     standardGeneric("windowScore"))
+
+##' Calculate GC content in windows
+##'
+##' @description Calculate GC content in windows
+##'
+##' @param windows ranges on which to operate
+##' @param ref A DNAStringSet object corresponding to the subject
+##'     reference
+##'
+##' @return GRanges
+##'
+##' @export
+##' @rdname windowGC
+##'
+setGeneric("windowGC", signature = c("windows", "ref"),
+           function(windows, ref) standardGeneric("windowGC"))
+
+##' Calculate RIP index in windows
+##'
+##' @description Calculate RIP index in windows
+##'
+##' @param windows ranges on which to operate
+##' @param ref A DNAStringSet object corresponding to the subject
+##'     reference
+##'
+##' @return GRanges
+##'
+##' @export
+##' @rdname windowRIP
+##'
+setGeneric("windowRIP", signature = c("windows", "ref"),
+           function(windows, ref, ...) standardGeneric("windowRIP"))
+
+##' Calculate repeat content in windows
+##'
+##' @description Calculate repeat content in windows
+##'
+##' @param windows ranges on which to operate
+##' @param obj ranges to intersect with windows
+##' @param ref A DNAStringSet object corresponding to the subject
+##'     reference
+##'
+##' @return GRanges
+##'
+##' @export
+##' @rdname windowRepeatContent
+##'
+setGeneric("windowRepeatContent", signature = c("windows", "obj", "ref"),
+           function(windows, obj, ref, ...) standardGeneric("windowRepeatContent"))

@@ -362,9 +362,13 @@ cowplot::plot_grid(plotlist=p, ncol=1, labels=genome.names, vjust=2.5, hjust=-1,
 In addition to genome-wide analyses, `ripr` provides functions for
 analyzing RIP scores, repeat content, and GC content in windows.
 
+```{r make-windows}
+windows <- lapply(genomes, makeWindows, 10000)
+```
+
 ```{r calc-window-score}
 gr.list <- GRangesList(lapply(genome.names, function(g) {
-    windowScore(rm.annot.ap[[g]], genomes[[g]], 10000)
+    windowScore(windows[[g]], rm.annot.ap[[g]], genomes[[g]])
 }))
 names(gr.list) <- genome.names
 ```

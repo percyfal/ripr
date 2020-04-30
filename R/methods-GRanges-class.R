@@ -79,6 +79,7 @@ plot.GRanges <- function(x, ...) {
 autoplot.GRangesList <- function(object, aes, vars,
                                  ..., .id="id") {
     data <- dplyr::bind_rows(lapply(object, as.data.frame), .id=.id)
+    data[[.id]] <- factor(data[[.id]], levels=unique(data[[.id]]))
     p <- .windowPlot(data, aes, vars, ...)
     p
 }
@@ -100,4 +101,128 @@ autoplot.GRangesList <- function(object, aes, vars,
 ##'
 plot.GRangesList <- function(x, ...) {
     print(autoplot(x, ...))
+}
+
+
+##'
+##' @importFrom S4Vectors DataFrame
+##' @importFrom Biostrings alphabetFrequency
+##'
+##' @export
+##' @rdname windowGC
+##'
+setMethod("windowGC", c("GRanges", "DNAStringSet"),
+          function(windows, ref) {
+    DataFrame(gc = unlist(lapply(subseqByRef(windows, ref), function(x) {
+        sum(alphabetFrequency(x)[c("G", "C")]) / length(x)
+    })))
+})
+
+
+##'
+##' @importFrom S4Vectors DataFrame
+##'
+##' @export
+##' @rdname windowRIP
+##'
+setMethod("windowRIP", c("GRanges", "DNAStringSet"),
+          function(windows, ref, ...) {
+    dots <- list(...)
+    arglist <- list(x = AlignmentItem(windows), ref = ref)
+    arglist <- append(arglist, dots[which(names(dots) %in% names(formals(ripr::count)))])
+    .rip <- do.call(calculateRIP, arglist)
+    mcols(.rip)[, c("rip.product", "rip.substrate", "rip.composite")]
+})
+
+
+##'
+##' @importFrom IRanges findOverlaps
+##' @importFrom S4Vectors DataFrame
+##'
+##' @export
+##' @rdname windowRepeatContent
+##'
+setMethod("windowRepeatContent", c("GRanges", "AlignmentItem", "DNAStringSet"),
+          function(windows, obj, ref, ...) {
+    .res = DataFrame(repeat.obs = rep(0, length(windows)))
+    hits <- findOverlaps(windows, obj, ignore.strand = TRUE)
+    obs <- c(by(as.data.frame(hits), as.data.frame(hits)$queryHits,
+                function(h){
+        sum(width(intersect(ranges(obj[h$subjectHits]),
+                            reduce(ranges(windows[h$queryHits])))))}))
+    .res$repeat.obs[as.integer(names(obs))] <- obs
+    .res
+})
+
+##'
+##' @rdname windowScore
+##' @export
+##'
+##' @param lambda list of functions that can be applied to the tuple
+##'     x, ref, and the generated windows
+##'
+##'
+setMethod("windowScore", c("GRanges", "AlignmentPairs", "DNAStringSet"),
+          function(windows, x, ref, which = c("rip", "repeat.content", "gc"), ...,
+                   lambda = list()) {
+    dots <- list(...)
+    which <- match.arg(which, c("rip", "repeat.content", "gc.content"), several.ok = TRUE)
+    if ("rip" %in% which) {
+        message("Calculating rip scores")
+        mcols(windows) <- cbind(mcols(windows), windowRIP(windows, ref))
+    }
+    if ("repeat.content" %in% which) {
+        message("Calculating repeat content")
+        mcols(windows) <- cbind(mcols(windows), windowRepeatContent(windows, query(x), ref))
+    }
+    if ("gc.content" %in% which) {
+        message("Calculating gc content")
+        mcols(windows) <- cbind(mcols(windows), windowGC(windows, ref))
+    }
+    for (f in names(lambda)) {
+        message("Applying ", f)
+        windows <- lambda[[f]](x, ref, windows)
+    }
+    windows
+})
+
+
+##' expectedWindowScores
+##'
+##' @description Calculated expected window scores for a windowed value
+##'
+##' @param windows ranges on which to operate
+##' @param col column name containing values in windows
+##'
+##' @export
+##' @rdname expectedWindowScores
+##'
+##' @return vector of expected values
+##'
+expectedWindowScores <- function(windows, col, ...) UseMethod("expectedWindowScores", windows)
+
+
+
+##'
+##' @importFrom GenomeInfoDb seqinfo seqnames
+##' @importFrom BiocGenerics width
+##'
+##' @export
+##' @rdname expectedWindowScores
+##'
+expectedWindowScores.GRanges <- function(windows, col, seqinfo=NULL, by.seqnames=FALSE) {
+    ## FIXME: not using seqinfo at the moment; could be useful if one
+    ## wants to normalize by ot
+    if (!is.null(seqinfo))
+        seqinfo <- seqinfo(windows)
+    obs <- mcols(windows)[[col]]
+    if (by.seqnames) {
+        frac <- tapply(windows, seqnames(windows),
+                       function(x) {sum(obs, na.rm=TRUE) / sum(width(x))})
+        exp <- as.numeric(frac[as.integer(match(seqnames(windows), names(frac)))] * width(windows))
+    } else {
+        frac <- sum(obs, na.rm = TRUE) / sum(width(windows))
+        exp <- frac * width(windows)
+    }
+    exp
 }
