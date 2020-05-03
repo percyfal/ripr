@@ -316,6 +316,7 @@ setGeneric("windowGC", signature = c("windows", "ref"),
 ##' @param windows ranges on which to operate
 ##' @param ref A DNAStringSet object corresponding to the subject
 ##'     reference
+##' @param ... additional parameters for \code{count}
 ##'
 ##' @return GRanges
 ##'
@@ -340,4 +341,4 @@ setGeneric("windowRIP", signature = c("windows", "ref"),
 ##' @rdname windowRepeatContent
 ##'
 setGeneric("windowRepeatContent", signature = c("windows", "obj", "ref"),
-           function(windows, obj, ref, ...) standardGeneric("windowRepeatContent"))
+           function(windows, obj, ref) standardGeneric("windowRepeatContent"))

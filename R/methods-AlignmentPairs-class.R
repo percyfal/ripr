@@ -30,9 +30,11 @@ setMethod("query", "AlignmentPairs", function(x) mcols(x)$query)
 ##' @export
 ##' @rdname query
 ##'
-setReplaceMethod("query",
-                 signature = c("AlignmentPairs", "AlignmentItem"),
-                 function(x, value) {
+##' @importFrom methods validObject
+##'
+setMethod("query<-",
+          signature = c("AlignmentPairs", "AlignmentItem"),
+          function(x, value) {
     mcols(x)$query <- value
     validObject(x)
     x
@@ -48,9 +50,11 @@ setMethod("sbjct", "AlignmentPairs", function(x) mcols(x)$subject)
 ##' @export
 ##' @rdname sbjct
 ##'
-setReplaceMethod("sbjct",
-                 signature = c("AlignmentPairs", "RepeatAlignmentItem"),
-                 function(x, value) {
+##' @importFrom methods validObject
+##'
+setMethod("sbjct<-",
+          signature = c("AlignmentPairs", "RepeatAlignmentItem"),
+          function(x, value) {
     mcols(x)$subject <- value
     validObject(x)
     x
@@ -99,10 +103,14 @@ setMethod("count", "AlignmentPairs",
 })
 
 
+##' genome
 ##'
 ##' @importFrom GenomeInfoDb genome
 ##'
+##' @rdname genome
 ##' @export
+##'
+##' @param x AlignmentPairs object
 ##'
 setMethod("genome", "AlignmentPairs",
           function(x) {

@@ -49,7 +49,7 @@ setMethod("as.data.frame", signature = "AlignmentItemList",
 ##'     geom_violin geom_density scale_color_viridis_d
 ##'     scale_fill_viridis_d quo_name facet_wrap element_blank
 ##'     coord_flip theme scale_y_reverse
-##'
+##' @importFrom cowplot plot_grid
 ##'
 ##' @export
 ##'

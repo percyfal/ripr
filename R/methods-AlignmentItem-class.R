@@ -80,6 +80,7 @@ setMethod("subseqByRef", c("AlignmentItem", "DNAStringSet"),
 ##' @return data.frame
 ##'
 ##' @importFrom GenomicRanges GRanges
+##' @importFrom GenomeInfoDb genome
 ##'
 ##' @export
 ##'

@@ -82,6 +82,7 @@ setMethod(GenomicRanges:::extraColumnSlotNames, "RepeatAlignmentItem",
     c("bases", "sequence", "repeat_class")
 })
 
+##' @importFrom methods validObject callNextMethod
 setMethod("initialize", "RepeatAlignmentItem", function(.Object, ...) {
     .Object <- callNextMethod()
     validObject(.Object)
@@ -119,6 +120,7 @@ setClass("AlignmentPairs",
          validity = .valid.AlignmentPairs)
 
 
+##' @importFrom methods validObject callNextMethod
 setMethod("initialize", "AlignmentPairs", function(.Object, ...) {
     .Object <- callNextMethod()
     validObject(.Object)

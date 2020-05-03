@@ -110,7 +110,7 @@ makeWindows <- function(obj, ...) UseMethod("makeWindows", obj)
 ##'
 ##' @return GRanges
 ##'
-makeWindows.DNAStringSet <- function(obj, window.size = 10000L, window.step = NULL) {
+makeWindows.DNAStringSet <- function(obj, window.size = 10000L, window.step = NULL, ...) {
     if (is.null(window.step)) window.step <- window.size
     windows <- unlist(slidingWindows(obj, width = window.size, step = window.step))
     windows$window <- unlist(seq_along(seqnames(windows)))

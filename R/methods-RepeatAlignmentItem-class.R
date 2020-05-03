@@ -120,7 +120,9 @@ setGeneric("repeatClass<-",
 ##' @rdname repeatClass
 ##' @export
 ##'
-setReplaceMethod("repeatClass",
+##' @importFrom methods validObject slot<-
+##'
+setMethod("repeatClass<-",
                  signature=c("RepeatAlignmentItem", "factorOrcharacter"),
                  function(x, value) {
     if (is.character(value))

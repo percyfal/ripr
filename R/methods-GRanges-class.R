@@ -143,7 +143,7 @@ setMethod("windowRIP", c("GRanges", "DNAStringSet"),
 ##' @rdname windowRepeatContent
 ##'
 setMethod("windowRepeatContent", c("GRanges", "AlignmentItem", "DNAStringSet"),
-          function(windows, obj, ref, ...) {
+          function(windows, obj, ref) {
     .res = DataFrame(repeat.obs = rep(0, length(windows)))
     hits <- findOverlaps(windows, obj, ignore.strand = TRUE)
     obs <- c(by(as.data.frame(hits), as.data.frame(hits)$queryHits,
@@ -193,6 +193,7 @@ setMethod("windowScore", c("GRanges", "AlignmentPairs", "DNAStringSet"),
 ##'
 ##' @param windows ranges on which to operate
 ##' @param col column name containing values in windows
+##' @param ... additional parameters
 ##'
 ##' @export
 ##' @rdname expectedWindowScores
@@ -210,7 +211,12 @@ expectedWindowScores <- function(windows, col, ...) UseMethod("expectedWindowSco
 ##' @export
 ##' @rdname expectedWindowScores
 ##'
-expectedWindowScores.GRanges <- function(windows, col, seqinfo=NULL, by.seqnames=FALSE) {
+##' @param seqinfo use seqinfo to define sequence lengths by which to
+##'     normalize scores when calculating expected values
+##' @param by.seqnames normalize scores by sequence name, e.g. within
+##'     chromosome instead of across entire genome
+##'
+expectedWindowScores.GRanges <- function(windows, col, seqinfo=NULL, by.seqnames=FALSE, ...) {
     ## FIXME: not using seqinfo at the moment; could be useful if one
     ## wants to normalize by ot
     if (!is.null(seqinfo))
