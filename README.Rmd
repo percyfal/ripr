@@ -16,6 +16,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 <!-- badges: start -->
 [![CircleCI](https://circleci.com/gh/percyfal/ripr.svg?style=svg&circle-token=2acf7a0a7f377fba201eb6e661163196a5a28b74)](https://app.circleci.com/pipelines/github/percyfal/ripr)
+[![R build status](https://github.com/percyfal/ripr/workflows/R-CMD-check/badge.svg)](https://github.com/percyfal/ripr/actions)
 <!-- badges: end -->
 
 
