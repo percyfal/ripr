@@ -12,7 +12,7 @@ jobs:
         run: |
           install.packages(c("remotes", "rcmdcheck", "knitr"))
           deps <- remotes::dev_package_deps(dependencies = TRUE)
-          remotes::install_deps(dependencies = deps$package[!is.na(deps$available)])
+          remotes::install_deps(dependencies = TRUE)
           if (!requireNamespace("BiocManager", quietly = TRUE)) {install.packages("BiocManager")}
           BiocManager::install(deps$package[is.na(deps$available)])
         shell: Rscript {0}
