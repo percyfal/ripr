@@ -10,7 +10,7 @@ jobs:
       - uses: r-lib/actions/setup-r@master
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
+          install.packages(c("remotes", "rcmdcheck", "knitr"))
           deps <- remotes::dev_package_deps(dependencies = TRUE)
           remotes::install_deps(dependencies = deps$package[!is.na(deps$available)])
           if (!requireNamespace("BiocManager", quietly = TRUE)) {install.packages("BiocManager")}
